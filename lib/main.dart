@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:food_website/providers/drawer_provider.dart';
+import 'package:food_website/providers/product_provider.dart';
+import 'package:food_website/theme/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+
+import 'providers/auth_provider.dart';
+import 'providers/cart_provider.dart';
+import 'providers/category_provider.dart';
+import 'screens/home_screen.dart';
+
+void main() {
+  Animate.restartOnHotReload = true;
+   VisibilityDetectorController.instance.updateInterval = Duration.zero;
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => DrawerProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+
+
+      ],
+      child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.scaffoldGrey,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.scaffoldGrey,
+          elevation: 0,
+        ),
+        fontFamily: 'Inter',
+      ),
+
+      home: const HomeScreen(),
+    ),
+    );
+  }
+}
