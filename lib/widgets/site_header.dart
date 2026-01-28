@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
+import 'package:food_website/screens/account_screen.dart';
 import 'package:provider/provider.dart';
 
 class SiteHeader extends StatefulWidget implements PreferredSizeWidget {
@@ -83,7 +84,18 @@ Widget build(BuildContext context) {
         ),
         Row(
           children: [
-            TextButton(onPressed: () {}, child: const Text('ACCOUNT')),
+            TextButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AccountScreen(),
+      ),
+    );
+  },
+  child: const Text('ACCOUNT'),
+),
+
             Consumer<CartProvider>(
               builder: (context, cart, _) => GestureDetector(
                 onTap: () =>

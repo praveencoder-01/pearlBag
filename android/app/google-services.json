@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "15812138698",
+    "project_id": "pearl-bags-8439d",
+    "storage_bucket": "pearl-bags-8439d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15812138698:android:ac76407aad673284f98633",
+        "android_client_info": {
+          "package_name": "com.example.food_website"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDChzWIx3_V37Ln_AGQ9qeI9DHipE2vt4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

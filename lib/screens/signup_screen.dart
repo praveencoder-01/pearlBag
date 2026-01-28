@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:food_website/auth/auth_service.dart';
-import 'package:food_website/screens/signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
   bool isLoading = false;
 
-  void login() async {
+  void signup() async {
     setState(() => isLoading = true);
     try {
-      await _authService.signIn(
+      await _authService.signUp(
         emailController.text.trim(),
         passwordController.text.trim(),
       );
+      Navigator.pop(context); // back to login screen
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Container(
-              width: 400, // fixed width for the box
+              width: 400, // fixed width card
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -66,13 +66,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.food_bank_rounded,
+                    Icons.person_add_alt_1_rounded,
                     size: 80,
                     color: Color(0xFF6C63FF),
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    "Welcome Back",
+                    "Create Account",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -81,12 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Login to your account",
+                    "Sign up to continue",
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                   const SizedBox(height: 24),
 
-                  // Email TextField
+                  // Email field
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Password TextField
+                  // Password field
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -117,14 +117,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Login Button
+                  // Signup button
                   isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: login,
+                            onPressed: signup,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6C63FF),
                               shape: RoundedRectangleBorder(
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             child: const Text(
-                              "Login",
+                              "Create Account",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -143,22 +143,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                   const SizedBox(height: 16),
 
-                  // Sign Up link
+                  // Back to Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? "),
+                      const Text("Already have an account? "),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignupScreen(),
-                            ),
-                          );
+                          Navigator.pop(context);
                         },
                         child: const Text(
-                          "Sign Up",
+                          "Login",
                           style: TextStyle(
                             color: Color(0xFF6C63FF),
                             fontWeight: FontWeight.bold,

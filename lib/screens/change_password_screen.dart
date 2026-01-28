@@ -1,34 +1,50 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:food_website/auth/auth_service.dart';
-import 'package:food_website/screens/signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
-
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final currentPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
   bool isLoading = false;
 
-  void login() async {
+  void changePassword() async {
     setState(() => isLoading = true);
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final currentPassword = currentPasswordController.text.trim();
+    final newPassword = newPasswordController.text.trim();
+
     try {
-      await _authService.signIn(
-        emailController.text.trim(),
-        passwordController.text.trim(),
+      // Re-authenticate
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
       );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password changed successfully")),
+      );
+
+      Navigator.pop(context); // go back to AccountScreen
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? "Error changing password")),
+      );
+    } finally {
+      setState(() => isLoading = false);
     }
-    setState(() => isLoading = false);
   }
 
   @override
@@ -49,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Container(
-              width: 400, // fixed width for the box
+              width: 400, // same fixed width as Login/Signup
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -66,13 +82,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.food_bank_rounded,
+                    Icons.lock_reset_rounded,
                     size: 80,
                     color: Color(0xFF6C63FF),
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    "Welcome Back",
+                    "Change Password",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -81,17 +97,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Login to your account",
+                    "Enter current and new password",
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                   const SizedBox(height: 24),
 
-                  // Email TextField
+                  // Current password
                   TextField(
-                    controller: emailController,
+                    controller: currentPasswordController,
+                    obscureText: true,
                     decoration: InputDecoration(
-                      hintText: "Email",
-                      prefixIcon: const Icon(Icons.email),
+                      labelText: "Current Password",
+                      prefixIcon: const Icon(Icons.lock_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -101,12 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Password TextField
+                  // New password
                   TextField(
-                    controller: passwordController,
+                    controller: newPasswordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: "Password",
+                      labelText: "New Password",
                       prefixIcon: const Icon(Icons.lock),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -117,14 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Login Button
+                  // Change password button
                   isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: login,
+                            onPressed: changePassword,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6C63FF),
                               shape: RoundedRectangleBorder(
@@ -132,42 +149,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             child: const Text(
-                              "Login",
+                              "Change Password",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                           ),
                         ),
-                  const SizedBox(height: 16),
-
-                  // Sign Up link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Don't have an account? "),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignupScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign Up",
-                          style: TextStyle(
-                            color: Color(0xFF6C63FF),
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
