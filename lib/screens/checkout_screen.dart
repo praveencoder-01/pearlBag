@@ -72,7 +72,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    for (var doc in cartItems) {
+    for (var doc in cartItems) {  
       await doc.reference.delete();
     }
   }
@@ -80,13 +80,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    print("User ID: $userId");
-FirebaseFirestore.instance
-    .collection('cart')
-    .doc(userId)
-    .collection('items')
-    .get()
-    .then((value) => print("Cart items: ${value.docs.length}"));
+//     print("User ID: $userId");
+// FirebaseFirestore.instance
+//     .collection('cart')
+//     .doc(userId)
+//     .collection('items')
+//     .get()
+//     .then((value) => print("Cart items: ${value.docs.length}"));
 
     return Scaffold(
       appBar: AppBar(title: const Text("Checkout")),
@@ -119,13 +119,21 @@ FirebaseFirestore.instance
                 child: _sectionCard(
                   title: "Items",
                   child: ListView.builder(
+                    shrinkWrap: true,
                     itemCount: cartItems.length,
                     itemBuilder: (context, index) {
                       final data =
                           cartItems[index].data() as Map<String, dynamic>;
 
                       return ListTile(
-                        leading: Image.network(data['imageUrl'], width: 40),
+                        leading: Image.network(
+  // agar data['imageUrl'] ek list hai, first item lo, nahi toh fallback
+  (data['imageUrl'] is List && data['imageUrl'].isNotEmpty) 
+      ? data['imageUrl'][0] 
+      : (data['imageUrl'] ?? ''), 
+  width: 40,
+  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported),
+),
                         title: Text(data['name']),
                         subtitle: Text("Qty: ${data['quantity']}"),
                         trailing: Text("₹ ${data['price']}"),

@@ -45,21 +45,22 @@ class Product {
 
   /// 🔥 FIRESTORE → PRODUCT
   factory Product.fromMap(String id, Map<String, dynamic> map) {
-    final List<String> imgs =
-        List<String>.from(map['imageUrls'] ?? []);
+  final List<String> imgs = map['imageUrls'] != null
+      ? List<String>.from(map['imageUrls'])
+      : [];
 
-    return Product(
-      id: id,
-      name: map['name'] ?? '',
-      price: (map['price'] as num).toDouble(),
-      category: map['category'] ?? '',
-      description: map['description'] ?? '',
-      images: imgs,
-      imageUrl: imgs.isNotEmpty ? imgs[0] : '', // ✅ FIRST IMAGE
-      cartImage: imgs.isNotEmpty ? imgs[0] : '',
-      infoSection: ProductInfoSectionData.fromMap(
-        map['infoSection'] ?? {},
-      ),
-    );
-  }
+  return Product(
+    id: id,
+    name: map['name'] ?? '',
+    price: (map['price'] as num).toDouble(),
+    category: map['category'] ?? '',
+    description: map['description'] ?? '',
+    images: imgs,
+    imageUrl: imgs.isNotEmpty ? imgs.first : '', // ✅ always String
+    cartImage: imgs.isNotEmpty ? imgs.first : '', // ✅ always String
+    infoSection: ProductInfoSectionData.fromMap(
+      map['infoSection'] ?? {},
+    ),
+  );
+}
 }

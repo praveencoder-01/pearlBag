@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
@@ -52,12 +54,14 @@ class _ProductCardState extends State<ProductCard>
             child: AnimatedScale(
               scale: isHovered ? 1.06 : 1.0,
               duration: const Duration(milliseconds: 250),
-              child: GestureDetector(
+              child: InkWell(
+                hoverColor: Colors.transparent,
+
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
+                      builder: (context) =>
                           ProductDetailScreen(product: widget.product),
                     ),
                   );
@@ -131,10 +135,15 @@ class _ProductCardState extends State<ProductCard>
                             Positioned(
                               bottom: 12,
                               right: 12,
-                              child: AnimatedOpacity(
-                                duration: const Duration(milliseconds: 200),
-                                opacity: isHovered ? 1 : 0,
-                                child: _AddToCartButton(product: widget.product),
+                              child: IgnorePointer(
+                                ignoring: false,
+                                child: AnimatedOpacity(
+                                  opacity: isHovered ? 1 : 0,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: _AddToCartButton(
+                                    product: widget.product,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -177,26 +186,55 @@ class _ProductCardState extends State<ProductCard>
 
 class _AddToCartButton extends StatelessWidget {
   final Product product;
-  const _AddToCartButton({required this.product,});
+  const _AddToCartButton({required this.product});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        Provider.of<CartProvider>(context, listen: false).addToCart(product);
+      onPressed: () async {
+  try {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final cartRef = FirebaseFirestore.instance
+        .collection('cart')
+        .doc(userId)
+        .collection('items')
+        .doc(product.id); // unique product ID
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${product.name} added to cart!")),
-        );
-      },
+    final cartDoc = await cartRef.get();
+
+    if (cartDoc.exists) {
+      // If product already in cart, increase quantity
+      final currentQty = (cartDoc.data()?['quantity'] ?? 1);
+      await cartRef.update({'quantity': currentQty + 1});
+    } else {
+      // New product add
+      await cartRef.set({
+        'name': product.name,
+        'price': product.price,
+        'quantity': 1,
+        'imageUrl': product.imageUrl, // ✅ string only
+      });
+    }
+
+    // Also update local provider (optional)
+    final cart = context.read<CartProvider>();
+    cart.addToCart(product);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("${product.name} added to cart!")),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error adding to cart: $e")),
+    );
+  }
+},
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromARGB(255, 245, 235, 206),
         foregroundColor: Colors.black,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
       child: const Text(
         'ADD TO CART',
@@ -209,4 +247,3 @@ class _AddToCartButton extends StatelessWidget {
     );
   }
 }
-

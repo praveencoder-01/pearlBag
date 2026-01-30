@@ -32,7 +32,7 @@ class CartScreen extends StatelessWidget {
   constraints: const BoxConstraints(
     maxWidth: 60, 
   ),
-  child: Image.asset(
+  child: Image.network(
     product.cartImage,
     fit: BoxFit.fitWidth,
   ),
