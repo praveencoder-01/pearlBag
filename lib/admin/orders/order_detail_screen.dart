@@ -47,28 +47,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ),
       child: Theme(
         data: Theme.of(context).copyWith(
-    highlightColor: Colors.transparent,
-    splashColor: Colors.transparent,
-    hoverColor: Colors.transparent,
-  ),
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+        ),
         child: DropdownButtonHideUnderline(
-          
           child: DropdownButton<String>(
-          value: orderStatuses.contains(currentStatus) ? currentStatus : null,
-          items: orderStatuses.map((status) {
-            return DropdownMenuItem<String>(
-        value: status,
-        child: Text(status),
-            );
-          }).toList(),
-          onChanged: (newStatus) async {
-            if (newStatus == null) return;
-            await FirebaseFirestore.instance
-          .collection('orders')
-          .doc(orderId)
-          .update({'orderStatus': newStatus});
-          },
-        )
+            value: orderStatuses.contains(currentStatus) ? currentStatus : null,
+            items: orderStatuses.map((status) {
+              return DropdownMenuItem<String>(
+                value: status,
+                child: Text(status),
+              );
+            }).toList(),
+            onChanged: (newStatus) async {
+              if (newStatus == null) return;
+              await FirebaseFirestore.instance
+                  .collection('orders')
+                  .doc(orderId)
+                  .update({'orderStatus': newStatus});
+            },
+          ),
         ),
       ),
     );
@@ -95,7 +94,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
-          final address = data['address'] ?? {};
+          final address = data['shippingAddress'] ?? {};
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -198,12 +197,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
 
     return Text(
-      "${address['name'] ?? ''}\n"
-      "${address['line1'] ?? ''}\n"
-      "${address['line2'] ?? ''}\n"
-      "${address['city'] ?? ''}, ${address['state'] ?? ''} - ${address['pincode'] ?? ''}\n"
-      "${address['country'] ?? ''}\n"
-      "Phone: ${address['phone'] ?? ''}",
+      "${address['street'] ?? ''}, ${address['city'] ?? ''}, ${address['state'] ?? ''}\n"
+      "${address['zip'] ?? ''}, ${address['country'] ?? ''}",
     );
   }
 
@@ -231,18 +226,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 6),
               child: ListTile(
-                leading: item['imageUrl'] != null && item['imageUrl'].toString().isNotEmpty
-    ? Image.network(
-        item['imageUrl'],
-        width: 50,
-        height: 50,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Agar image URL invalid hai toh icon show kare
-          return const Icon(Icons.broken_image);
-        },
-      )
-    : const Icon(Icons.image_not_supported),
+                leading:
+                    item['imageUrl'] != null &&
+                        item['imageUrl'].toString().isNotEmpty
+                    ? Image.network(
+                        item['imageUrl'],
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Agar image URL invalid hai toh icon show kare
+                          return const Icon(Icons.broken_image);
+                        },
+                      )
+                    : const Icon(Icons.image_not_supported),
 
                 title: Text(item['name'] ?? 'Item'),
                 subtitle: Text("Qty: ${item['quantity'] ?? 1}"),

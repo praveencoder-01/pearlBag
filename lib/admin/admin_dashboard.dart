@@ -10,10 +10,17 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: const Text(
+          "Admin Dashboard",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: "Logout",
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
@@ -45,12 +52,53 @@ class AdminDashboard extends StatelessWidget {
                     final orderCount = orderSnap.data?.docs.length ?? 0;
                     final userCount = userSnap.data?.docs.length ?? 0;
 
-                    return GridView.count(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.6,
+                    final today = DateTime.now();
+
+                    final todayOrdersList =
+                        orderSnap.data?.docs.where((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          if (data['createdAt'] == null) return false;
+
+                          final date = (data['createdAt'] as Timestamp)
+                              .toDate();
+
+                          return date.year == today.year &&
+                              date.month == today.month &&
+                              date.day == today.day;
+                        }).toList() ??
+                        [];
+
+                    final todayOrdersCount = todayOrdersList.length;
+
+                    final todayRevenue = todayOrdersList.fold<double>(0, (
+                      sum,
+                      doc,
+                    ) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return sum + (data['totalAmount'] ?? 0);
+                    });
+
+                    return GridView(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1.8,
+                          ),
                       children: [
+                        DashboardCard(
+                          title: "Today Orders",
+                          value: todayOrdersCount.toString(),
+                          icon: Icons.today,
+                          color: Colors.purple,
+                        ),
+                        DashboardCard(
+                          title: "Today Revenue",
+                          value: "₹${todayRevenue.toStringAsFixed(0)}",
+                          icon: Icons.currency_rupee,
+                          color: Colors.teal,
+                        ),
                         DashboardCard(
                           title: "Products",
                           value: productCount.toString(),
@@ -69,8 +117,6 @@ class AdminDashboard extends StatelessWidget {
                           icon: Icons.people,
                           color: Colors.blue,
                         ),
-                        const SizedBox(height: 20),
-                        
                       ],
                     );
                   },
@@ -101,30 +147,39 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
+            color: color.withOpacity(0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, size: 40, color: color),
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: color.withOpacity(0.2),
+            child: Icon(icon, color: color, size: 26),
+          ),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -132,7 +187,11 @@ class DashboardCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 title,
-                style: const TextStyle(fontSize: 16, color: Colors.black54),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

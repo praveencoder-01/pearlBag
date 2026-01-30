@@ -47,25 +47,117 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             ),
           ),
 
-          // 🔹 FILTER
+          // 🔹 FILTER BUTTONS ROW
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: DropdownButtonFormField<String>(
-              initialValue: selectedStatus,
-              items: statuses
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() => selectedStatus = value!);
-              },
-              decoration: const InputDecoration(
-                labelText: "Filter by Status",
-                border: OutlineInputBorder(),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: statuses.map((status) {
+                  final bool isSelected = selectedStatus == status;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSelected
+                            ? Colors.deepPurple
+                            : Colors.grey[300],
+                        foregroundColor: isSelected
+                            ? Colors.white
+                            : Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedStatus = status;
+                        });
+                      },
+                      child: Text(status),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),
 
           const SizedBox(height: 8),
+
+          // 🔹 HEADER ROW (ID, Name, Address, Date, Amount, Status)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.shade50,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "ID",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Name",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      "Address",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Date",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "Amount",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "Payment",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "Details",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "Status",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10),
 
           // 🔹 ORDERS LIST
           Expanded(
@@ -108,94 +200,128 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     final doc = orders[index];
                     final data = doc.data() as Map<String, dynamic>;
 
-                    final String orderStatus = data['orderStatus'] ?? 'Pending';
+                    // final String orderStatus = data['orderStatus'] ?? 'Pending';
 
                     return Card(
-                      elevation: 4,
+                      elevation: 6,
+                      shadowColor: Colors.black12,
                       margin: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 6,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 14,
+                        ),
+                        child: Row(
                           children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.deepPurple,
-                                  child: Text(
-                                    orderStatus.isNotEmpty
-                                        ? orderStatus[0]
-                                        : '?',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: Text(data['orderNumber'] ?? 'N/A'),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(data['userName'] ?? 'N/A'),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                data['shippingAddress'] != null
+                                    ? "${data['shippingAddress']['street'] ?? ''}, ${data['shippingAddress']['city'] ?? ''}"
+                                    : 'N/A',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                data['createdAt'] != null
+                                    ? (data['createdAt'] as Timestamp)
+                                          .toDate()
+                                          .toString()
+                                          .split(' ')[0]
+                                    : 'N/A',
+                              ),
+                            ),
 
-                                Expanded(
-                                  child: Text(
-                                    "Order #${data['orderNumber'] ?? 'N/A'}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                            // 💰 Amount highlight
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                "₹${data['totalAmount'] ?? 0}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+                            ),
+
+                            // 💳 Payment
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                data['paymentStatus'] ?? 'Unpaid',
+                                style: TextStyle(
+                                  color: (data['paymentStatus'] == 'Paid')
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            // 🔹 DETAILS + VIEW BUTTON
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 6),
+
+                                  // 👇 View Details Button
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => OrderDetailScreen(
+                                            orderId: doc.id,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 6,
+                                        horizontal: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.deepPurple,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        "View",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-
-                                _statusChip(orderStatus),
-                              ],
+                                ],
+                              ),
                             ),
 
-                            const SizedBox(height: 8),
-
-                            Text("Amount: ₹ ${data['totalAmount'] ?? 0}"),
-                            Text(
-                              "Payment: ${data['paymentStatus'] ?? 'Unpaid'}",
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            OrderDetailScreen(orderId: doc.id),
-                                      ),
-                                    );
-                                  },
-                                  child: const Text("View Details"),
-                                ),
-                                
-
-                                // DropdownButton<String>(
-                                //   value: orderStatus,
-                                //   underline: const SizedBox(),
-                                //   items: statuses
-                                //       .where((e) => e != 'All')
-                                //       .map(
-                                //         (e) => DropdownMenuItem(
-                                //           value: e,
-                                //           child: Text(e),
-                                //         ),
-                                //       )
-                                //       .toList(),
-                                //   onChanged: (value) {
-                                //     FirebaseFirestore.instance
-                                //         .collection('orders')
-                                //         .doc(doc.id)
-                                //         .update({'orderStatus': value});
-                                //   },
-                                // ),
-                              ],
+                            // 🔹 Status chip (same logic)
+                            Expanded(
+                              child: _statusChip(
+                                data['orderStatus'] ?? 'Pending',
+                              ),
                             ),
                           ],
                         ),

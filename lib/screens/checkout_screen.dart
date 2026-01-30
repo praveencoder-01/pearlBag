@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
-
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -12,21 +10,83 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  final streetController = TextEditingController();
+  final cityController = TextEditingController();
+  final stateController = TextEditingController();
+  final zipController = TextEditingController();
+  final countryController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  // ✅ SECTION CARD (INSIDE STATE)
+  bool isLoading = false;
+
+  String street = '';
+  String city = '';
+  String stateName = '';
+  String zip = '';
+  String country = '';
+  bool rememberAddress = false; // 🔹 toggle for saving address
+
+  Future<void> loadSavedAddress() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return; // ✅ safety
+
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('addresses')
+        .where('isDefault', isEqualTo: true)
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      final data = query.docs.first.data();
+
+      setState(() {
+        streetController.text = data['street'] ?? '';
+        cityController.text = data['city'] ?? '';
+        stateController.text = data['state'] ?? '';
+        zipController.text = data['zip'] ?? '';
+        countryController.text = data['country'] ?? '';
+        rememberAddress = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadSavedAddress();
+  }
+
   Widget _sectionCard({required String title, required Widget child}) {
-    return Card(
-      margin: const EdgeInsets.all(10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(height: 12),
             child,
           ],
         ),
@@ -34,7 +94,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  // ✅ TOTAL
   double calculateTotal(List<QueryDocumentSnapshot> items) {
     double total = 0;
     for (var doc in items) {
@@ -44,8 +103,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return total;
   }
 
-  // ✅ PLACE ORDER
-  Future<void> placeOrder(List<QueryDocumentSnapshot> cartItems) async {
+  Future<void> placeOrder(
+    List<QueryDocumentSnapshot> cartItems,
+    Map<String, dynamic> address,
+  ) async {
     final user = FirebaseAuth.instance.currentUser!;
     final orderRef = FirebaseFirestore.instance.collection('orders').doc();
 
@@ -60,123 +121,370 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       };
     }).toList();
 
-    final totalAmount = calculateTotal(cartItems);
-
     await orderRef.set({
       'userId': user.uid,
-      'orderNumber': DateTime.now().millisecondsSinceEpoch,
       'items': orderItems,
-      'totalAmount': totalAmount,
+      'totalAmount': calculateTotal(cartItems),
+      'shippingAddress': address,
       'orderStatus': 'Pending',
       'paymentStatus': 'COD',
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    for (var doc in cartItems) {  
+    for (var doc in cartItems) {
       await doc.reference.delete();
     }
+  }
+
+  Widget _input(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        validator: (v) => v!.isEmpty ? "Required" : null,
+      ),
+    );
+  }
+
+  Widget _priceRow(String label, double value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            "₹ $value",
+            style: TextStyle(
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              fontSize: isTotal ? 18 : 14,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-//     print("User ID: $userId");
-// FirebaseFirestore.instance
-//     .collection('cart')
-//     .doc(userId)
-//     .collection('items')
-//     .get()
-//     .then((value) => print("Cart items: ${value.docs.length}"));
 
     return Scaffold(
       appBar: AppBar(title: const Text("Checkout")),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 950),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('cart')
+                .doc(userId)
+                .collection('items')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-      
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('cart')
-            .doc(userId)
-            .collection('items')
-            .snapshots(),
-        builder: (context, snapshot) {
+              final cartItems = snapshot.data!.docs;
+              final totalAmount = calculateTotal(cartItems);
 
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final cartItems = snapshot.data!.docs;
-
-          if (cartItems.isEmpty) {
-            return const Center(child: Text("Cart is empty"));
-          }
-
-          final totalAmount = calculateTotal(cartItems);
-
-          return Column(
-            children: [
-
-              Expanded(
-                child: _sectionCard(
-                  title: "Items",
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
-                      final data =
-                          cartItems[index].data() as Map<String, dynamic>;
-
-                      return ListTile(
-                        leading: Image.network(
-  // agar data['imageUrl'] ek list hai, first item lo, nahi toh fallback
-  (data['imageUrl'] is List && data['imageUrl'].isNotEmpty) 
-      ? data['imageUrl'][0] 
-      : (data['imageUrl'] ?? ''), 
-  width: 40,
-  errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported),
-),
-                        title: Text(data['name']),
-                        subtitle: Text("Qty: ${data['quantity']}"),
-                        trailing: Text("₹ ${data['price']}"),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              _sectionCard(
-                title: "Total",
+              if (cartItems.isEmpty) {
+                return const Center(child: Text("Cart is empty"));
+              }
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "₹ $totalAmount",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                    /// 🔹 USER DETAILS
+                    _sectionCard(
+                      title: "User Details",
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            initialValue:
+                                FirebaseAuth
+                                    .instance
+                                    .currentUser
+                                    ?.displayName ??
+                                "",
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              labelText: "Name",
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: "Phone Number",
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
+
+                    /// 🔹 SHIPPING ADDRESS
+                    _sectionCard(
+                      title: "Shipping Address",
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            _input(streetController, "Street"),
+                            _input(cityController, "City"),
+                            _input(stateController, "State"),
+                            _input(zipController, "ZIP Code"),
+                            _input(countryController, "Country"),
+
+                            const SizedBox(height: 8),
+
+                            CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              title: const Text(
+                                "Remember this address",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              value: rememberAddress,
+                              onChanged: (val) {
+                                setState(() => rememberAddress = val ?? false);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    /// 🔹 CART SUMMARY
+                    _sectionCard(
+                      title: "Cart Items",
+                      child: Column(
+                        children: cartItems.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      (data['imageUrl'] is List &&
+                                              data['imageUrl'].isNotEmpty)
+                                          ? data['imageUrl'][0]
+                                          : data['imageUrl'] ?? "",
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const Icon(Icons.image_not_supported),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          data['name'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Qty: ${data['quantity']}",
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    "₹${data['price']}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 24),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    /// 🔹 PRICE BREAKDOWN
+                    _sectionCard(
+                      title: "Price Details",
+                      child: Column(
+                        children: [
+                          _priceRow("Subtotal", totalAmount),
+                          _priceRow("Delivery", 0),
+                          _priceRow("Tax", 0),
+                          const Divider(),
+                          _priceRow("Total", totalAmount, isTotal: true),
+                        ],
+                      ),
+                    ),
+
+                    /// 🔹 PAYMENT METHOD
+                    _sectionCard(
+                      title: "Payment Method",
+                      child: Column(
+                        children: const [
+                          RadioListTile(
+                            value: 1,
+                            groupValue: 1,
+                            onChanged: null,
+                            title: Text("Cash on Delivery"),
+                          ),
+                          RadioListTile(
+                            value: 2,
+                            groupValue: 1,
+                            onChanged: null,
+                            title: Text("Online Payment (Coming Soon)"),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    /// 🔹 DELIVERY INFO
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.local_shipping_outlined, size: 20),
+                          SizedBox(width: 8),
+                          Text("Delivered in 5–7 business days"),
+                        ],
+                      ),
+                    ),
+
+                    /// 🔹 PLACE ORDER BUTTON
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
+                      height: 52,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          await placeOrder(cartItems);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Order placed successfully")),
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Place Order"),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                if (!_formKey.currentState!.validate()) return;
+
+                                setState(() => isLoading = true);
+
+                                final user = FirebaseAuth.instance.currentUser;
+                                if (user == null) {
+                                  setState(() => isLoading = false);
+                                  return;
+                                }
+
+                                final address = {
+                                  'street': streetController.text.trim(),
+                                  'city': cityController.text.trim(),
+                                  'state': stateController.text.trim(),
+                                  'zip': zipController.text.trim(),
+                                  'country': countryController.text.trim(),
+                                };
+
+                                // 🔹 SAVE ADDRESS
+                                if (rememberAddress) {
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(user.uid)
+                                      .collection('addresses')
+                                      .add({
+                                        ...address,
+                                        'isDefault': true,
+                                        'createdAt':
+                                            FieldValue.serverTimestamp(),
+                                      });
+                                }
+
+                                // 🔥 ORDER PLACE
+                                await placeOrder(cartItems, address);
+
+                                setState(() => isLoading = false);
+
+                                if (mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: const Text("Order Placed"),
+                                      content: const Text(
+                                        "Your order has been placed successfully.",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("OK"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              },
+
+                        // ✅ THIS WAS MISSING
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "Place Order",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 }
-
-
