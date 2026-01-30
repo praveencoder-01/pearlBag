@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_website/providers/cart_provider.dart';
+import 'package:food_website/screens/checkout_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/drawer_provider.dart';
@@ -167,7 +168,14 @@ class SiteDrawerRight extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CheckoutScreen(),
+                          ),
+                        );
+                      },
                       child: const Text(
                         'CHECK OUT',
                         style: TextStyle(

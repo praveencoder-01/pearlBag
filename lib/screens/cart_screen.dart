@@ -30,7 +30,7 @@ class CartScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: ConstrainedBox(
   constraints: const BoxConstraints(
-    maxWidth: 60,
+    maxWidth: 60, 
   ),
   child: Image.asset(
     product.cartImage,

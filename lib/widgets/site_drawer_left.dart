@@ -32,7 +32,7 @@ class SiteDrawerLeft extends StatelessWidget {
             padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 SizedBox(height: 15),
                 Center(
                   child: Text(
@@ -56,6 +56,7 @@ class SiteDrawerLeft extends StatelessWidget {
                 SizedBox(height: 280),
                 Divider(color: Colors.black12, thickness: 1),
                 _DrawerItem(title: 'ABOUT US'),
+
               ],
             ),
           ),

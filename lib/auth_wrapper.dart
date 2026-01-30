@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:food_website/admin/admin_dashboard.dart';
+import 'package:food_website/screens/home_screen.dart';
 import 'package:food_website/screens/login_screen.dart';
-import 'screens/home_screen.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -16,10 +18,32 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        if (snapshot.hasData) {
-          return const HomeScreen(); // your main screen
+
+        if (!snapshot.hasData) {
+          return const LoginScreen();
         }
-        return const LoginScreen();
+
+        final user = snapshot.data!;
+
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('admin')
+              .doc(user.uid)
+              .get(),
+          builder: (context, adminSnap) {
+            if (adminSnap.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (adminSnap.data != null && adminSnap.data!.exists) {
+              return const AdminDashboard();
+            } else {
+              return const HomeScreen();
+            }
+          },
+        );
       },
     );
   }

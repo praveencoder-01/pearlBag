@@ -8,19 +8,26 @@ class ProductInfoSectionData {
     required this.description,
     required this.image,
   });
-}
 
+  factory ProductInfoSectionData.fromMap(Map<String, dynamic> map) {
+    return ProductInfoSectionData(
+      title: map['title'] ?? '',
+      description: map['description'] ?? '',
+      image: map['image'] ?? '',
+    );
+  }
+}
 
 class Product {
   final String id;
   final String name;
   final double price;
-  final String imageUrl;
-  final String cartImage;
   final String category;
   final String description;
-  final List<String> images; 
 
+  final List<String> images; // 🔥 4 images
+  final String imageUrl; // 🔥 first image (list[0])
+  final String cartImage;
 
   final ProductInfoSectionData infoSection;
 
@@ -28,11 +35,31 @@ class Product {
     required this.id,
     required this.name,
     required this.price,
-    required this.imageUrl,
-    required this.cartImage,
     required this.category,
     required this.description,
     required this.images,
+    required this.imageUrl,
+    required this.cartImage,
     required this.infoSection,
   });
+
+  /// 🔥 FIRESTORE → PRODUCT
+  factory Product.fromMap(String id, Map<String, dynamic> map) {
+    final List<String> imgs =
+        List<String>.from(map['imageUrls'] ?? []);
+
+    return Product(
+      id: id,
+      name: map['name'] ?? '',
+      price: (map['price'] as num).toDouble(),
+      category: map['category'] ?? '',
+      description: map['description'] ?? '',
+      images: imgs,
+      imageUrl: imgs.isNotEmpty ? imgs[0] : '', // ✅ FIRST IMAGE
+      cartImage: imgs.isNotEmpty ? imgs[0] : '',
+      infoSection: ProductInfoSectionData.fromMap(
+        map['infoSection'] ?? {},
+      ),
+    );
+  }
 }

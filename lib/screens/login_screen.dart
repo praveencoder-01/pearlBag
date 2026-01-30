@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:food_website/admin/admin_dashboard.dart';
 import 'package:food_website/auth/auth_service.dart';
+import 'package:food_website/screens/home_screen.dart';
 import 'package:food_website/screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,20 +20,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isLoading = false;
 
-  void login() async {
-    setState(() => isLoading = true);
-    try {
-      await _authService.signIn(
-        emailController.text.trim(),
-        passwordController.text.trim(),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-    setState(() => isLoading = false);
+  // ✅ Login function
+void login() async {
+  setState(() => isLoading = true);
+
+  try {
+    await _authService.signIn(
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+    // ❌ NO NAVIGATION HERE
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(e.toString())));
   }
+
+  setState(() => isLoading = false);
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -176,4 +185,33 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  // ✅ Check if user is admin or normal user
+Future<void> handleLogin(User user) async {
+
+  final adminDoc = await FirebaseFirestore.instance
+      .collection('admin')  
+      .doc(user.uid)
+      .get();
+
+
+  if (!mounted) return;
+
+  // 🔥 WEB-SAFE NAVIGATION
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+
+    if (adminDoc.exists) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => AdminDashboard()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+      );
+    }
+  });
+}
+
+
 }
