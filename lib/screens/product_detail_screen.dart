@@ -9,6 +9,7 @@ import 'package:food_website/widgets/product_horizontal_list.dart';
 import 'package:food_website/widgets/product_info_image_section.dart';
 import 'package:food_website/widgets/site_footer.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 enum ProductInfoSection { description, shipping, returns }
 
@@ -25,12 +26,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late List<Product> suggestedProducts;
   ProductInfoSection _selectedSection = ProductInfoSection.description;
   bool _isAddingToCart = false;
+  int _currentImageIndex = 0;
+  bool _isVideoSelected = false;
 
   @override
   void initState() {
     super.initState();
 
-    suggestedProducts = dummyProducts 
+    suggestedProducts = dummyProducts
         .where((p) => p.id != widget.product.id)
         .take(4)
         .toList();
@@ -63,6 +66,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           style: TextStyle(fontSize: 14, height: 1.6, color: Colors.black54),
         );
     }
+  }
+
+  // Place this above your Add to Cart button in the Column
+  Widget buildDiscountPriceRow(Product product) {
+    // Ensure originalPrice > current price to show discount
+    final originalPrice = widget.product.price * 1.2; // fallback 20% higher
+    final discountPercent =
+        ((originalPrice - product.price) / originalPrice * 100).round();
+
+    //  final discountPercent = 17;
+
+    return Row(
+      children: [
+        Text(
+          'Rs${widget.product.price.toStringAsFixed(0)}',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(width: 12),
+
+        Text(
+          'Rs${originalPrice.toStringAsFixed(0)}',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color.fromARGB(255, 66, 66, 66),
+            decoration: TextDecoration.lineThrough,
+          ),
+        ),
+        const SizedBox(width: 12),
+
+        Text(
+          '$discountPercent% OFF', // 👈 USED HERE
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 243, 102, 77),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -122,20 +164,114 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: SizedBox(
-                            height: 620,
-                            child: Center(
-                              child: SizedBox(
-                                height: 500,
-                                width: double.infinity,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: ProductImageSlider(
-                                    images: widget.product.images,
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: SizedBox(
+                              height: 480,
+                              width: double.infinity,
+                              child: _isVideoSelected
+                                  ? const ProductVideoPlayer(
+                                      videoUrl:
+                                          'assets/images/videos/home-hero.mp4',
+                                    )
+                                  : ProductImageSlider(
+                                      image: widget
+                                          .product
+                                          .images[_currentImageIndex],
+                                    ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          height: 80,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: widget.product.images.length + 1,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              if (index == widget.product.images.length) {
+                                // 🎥 VIDEO THUMBNAIL
+                                return MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  onEnter: (_) {
+                                    setState(() => _isVideoSelected = true);
+                                  },
+                                  child: Container(
+                                    width: 68,
+                                    height: 68,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.black),
+                                      color: Colors.black,
+                                    ),
+                                    child: const Icon(
+                                      Icons.play_arrow,
+                                      color: Colors.white,
+                                      size: 32,
+                                    ),
+                                  ),
+                                );
+                              }
+                              final isActive = index == _currentImageIndex;
+
+                              return MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                onEnter: (_) async {
+                                  await Future.delayed(
+                                    const Duration(milliseconds: 80),
+                                  );
+                                  if (mounted) {
+                                    _isVideoSelected = false;
+                                    setState(() => _currentImageIndex = index);
+                                  }
+                                },
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() => _currentImageIndex = index);
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isActive
+                                            ? Colors.black
+                                            : Colors.grey.shade300,
+                                        width: isActive ? 2 : 1,
+                                      ),
+                                      boxShadow: isActive
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.15,
+                                                ),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.asset(
+                                        widget.product.images[index],
+                                        width: 68,
+                                        height: 68,
+                                        fit: BoxFit.cover,
+                                        opacity: AlwaysStoppedAnimation(
+                                          isActive ? 1.0 : 0.8,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ),
 
@@ -152,15 +288,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Rs${widget.product.price.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.black87,
+                        const SizedBox(height: 6),
+
+                        buildDiscountPriceRow(widget.product),
+                        const SizedBox(height: 6),
+
+                        const Text(
+                          '"Crafted just for you"',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            // fontStyle: FontStyle.italic,
+                            color: Colors.black,
+                            letterSpacing: 1.1,
                           ),
                         ),
-
-                        // const SizedBox(height: 30),
                         const SizedBox(height: 40),
 
                         SizedBox(
@@ -309,7 +451,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             const SizedBox(height: 26),
 
-            ProductHorizontalList(products: dummyProducts ),
+            ProductHorizontalList(products: dummyProducts),
 
             const SiteFooter(),
           ],
@@ -398,68 +540,69 @@ class _InfoTextButtonState extends State<_InfoTextButton> {
 }
 
 // image slider code
-class ProductImageSlider extends StatefulWidget {
-  final List<String> images;
+class ProductImageSlider extends StatelessWidget {
+  final String image;
 
-  const ProductImageSlider({super.key, required this.images});
+  const ProductImageSlider({super.key, required this.image});
 
   @override
-  State<ProductImageSlider> createState() => _ProductImageSliderState();
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: Image.asset(
+          image,
+          key: ValueKey(image),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      ),
+    );
+  }
 }
 
-class _ProductImageSliderState extends State<ProductImageSlider> {
-  int currentIndex = 0;
+class ProductVideoPlayer extends StatefulWidget {
+  final String videoUrl;
+  const ProductVideoPlayer({super.key, required this.videoUrl});
 
-  void next() {
-    setState(() {
-      currentIndex = (currentIndex + 1) % widget.images.length;
-    });
+  @override
+  State<ProductVideoPlayer> createState() => _ProductVideoPlayerState();
+}
+
+class _ProductVideoPlayerState extends State<ProductVideoPlayer> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.setLooping(true);
+        _controller.play();
+      });
   }
 
-  void previous() {
-    setState(() {
-      currentIndex =
-          (currentIndex - 1 + widget.images.length) % widget.images.length;
-    });
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // IMAGE
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Image.asset(
-                widget.images[currentIndex],
-                key: ValueKey(currentIndex),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
-            ),
-          ),
+    if (!_controller.value.isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-          // LEFT BUTTON
-          Positioned(left: 12, child: _navButton(Icons.chevron_left, previous)),
-
-          // RIGHT BUTTON
-          Positioned(right: 12, child: _navButton(Icons.chevron_right, next)),
-        ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: VideoPlayer(_controller),
       ),
-    );
-  }
-
-  Widget _navButton(IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(50),
-      child: Icon(icon, color: Colors.black, size: 40),
     );
   }
 }

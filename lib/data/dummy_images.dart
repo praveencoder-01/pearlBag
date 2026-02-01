@@ -1,13 +1,14 @@
 import '../models/product.dart';
 
-final List<Product> dummyProducts  = [
+final List<Product> dummyProducts = [
   Product(
     id: 'p4_1',
     name: 'Pearl Handbag',
     price: 3499,
+    originalPrice: 700,
     imageUrl: 'assets/images/products/backpack-in-black.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
-    category: 'handbags',
+    category: 'best',
     description:
         'Soft, elegant, and timeless — the Pearl Grace Handbag is designed for women who love subtle luxury. Hand-embellished with delicate pearls, this bag adds a graceful glow to every outfit without feeling loud or heavy.Crafted with care and attention to detail, it offers a perfect balance of beauty and practicality. The structured design keeps your essentials secure, while the pearl finish makes it ideal for weddings, parties, festive occasions, and special evenings.Lightweight and comfortable to carry, this handbag pairs beautifully with both traditional and modern looks. More than just an accessory, it is a reflection of calm confidence and refined style.',
 
@@ -28,9 +29,11 @@ final List<Product> dummyProducts  = [
     id: 'p4_2',
     name: 'Classic Leather Tote',
     price: 4299,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/bright-red-purse-with-gold.png',
     cartImage: 'assets/images/products/bright-red-purse-with-gold.png',
-    category: 'totes',
+    category: 'new',
     description:
         'Soft, elegant, and timeless — the Pearl Grace Handbag is designed for women who love subtle luxury. Hand-embellished with delicate pearls, this bag adds a graceful glow to every outfit without feeling loud or heavy. Crafted with care and attention to detail, it offers a perfect balance of beauty and practicality. The structured design keeps your essentials secure, while the pearl finish makes it ideal for weddings, parties, festive occasions, and special evenings. Lightweight and comfortable to carry, this handbag pairs beautifully with both traditional and modern looks. More than just an accessory, it is a reflection of calm confidence and refined style.',
     images: [
@@ -50,9 +53,11 @@ final List<Product> dummyProducts  = [
     id: 'p4_3',
     name: 'Mini Evening Purse',
     price: 2899,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse-with-shoulder-strap.png',
     cartImage: 'assets/images/products/brown-purse-with-shoulder-strap.png',
-    category: 'evening',
+    category: 'casual',
     description:
         'Compact and stylish purse ideal for parties and special occasions.',
     images: [
@@ -72,6 +77,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_4',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -94,6 +101,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_5',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/gold-zipper-on-black-backpack.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -116,6 +125,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_6',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/leather-handbag.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -138,6 +149,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_7',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/light-pink-purse.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -160,6 +173,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_8',
     name: 'Mini Evening Purse',
     price: 2899,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse-with-shoulder-strap.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'evening',
@@ -182,6 +197,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_9',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/leather-handbag.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -204,6 +221,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_10',
     name: 'Pearl Handbag',
     price: 3499,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/backpack-in-black.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'handbags',
@@ -226,6 +245,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_11',
     name: 'Classic Leather Tote',
     price: 4299,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/bright-red-purse-with-gold.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'totes',
@@ -248,6 +269,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_12',
     name: 'Mini Evening Purse',
     price: 2899,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse-with-shoulder-strap.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'evening',
@@ -270,6 +293,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_13',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -292,6 +317,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_14',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/gold-zipper-on-black-backpack.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -314,6 +341,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_15',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/leather-handbag.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -336,6 +365,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_16',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/light-pink-purse.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',
@@ -358,6 +389,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_17',
     name: 'Mini Evening Purse',
     price: 2899,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/brown-purse-with-shoulder-strap.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'evening',
@@ -380,6 +413,8 @@ final List<Product> dummyProducts  = [
     id: 'p4_18',
     name: 'Luxury Shoulder Bag',
     price: 5199,
+    originalPrice: 700,
+
     imageUrl: 'assets/images/products/leather-handbag.png',
     cartImage: 'assets/images/products/backpack-in-black.png',
     category: 'luxury',

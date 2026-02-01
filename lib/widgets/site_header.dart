@@ -11,221 +11,149 @@ class SiteHeader extends StatefulWidget implements PreferredSizeWidget {
 
   const SiteHeader({super.key, this.onSearchChanged});
 
- @override
-Size get preferredSize => const Size.fromHeight(80);
-
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
 
   @override
   State<SiteHeader> createState() => _SiteHeaderState();
 }
 
 class _SiteHeaderState extends State<SiteHeader> {
-  // List<Product> _filteredProducts = [];
-  // bool _isSearching = false;
-  // final TextEditingController _controller = TextEditingController();
-
-  // void _onSearch(String value) {
-  //   setState(() {
-  //     _filteredProducts = dummyProducts
-  //         .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
-  //         .toList();
-  //   });
-  // }
-
-  // void _clearSearch() {
-  //   setState(() {
-  //     _isSearching = false;
-  //     _filteredProducts.clear();
-  //     _controller.clear();
-  //     widget.onSearchChanged?.call(false);
-  //   });
-  // }
-
   @override
-Widget build(BuildContext context) {
-  return Container(
-    height: 80,
-    padding: const EdgeInsets.symmetric(horizontal: 32),
-    color: Colors.transparent,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            TextButton(
-              onPressed: () =>
-                  context.read<DrawerProvider>().openLeft(),
-              child: const Text('MENU'),
-            ),
-            TextButton(
-  onPressed: () {
-    widget.onSearchChanged?.call(true);
-  },
-  style: TextButton.styleFrom(
-    padding: EdgeInsets.zero, // ❌ no container space
-    minimumSize: Size.zero,
-    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    splashFactory: NoSplash.splashFactory, // ❌ no splash
-    overlayColor: Colors.transparent, // ❌ no highlight
-  ),
-  child: const Text(
-    'Search',
-    style: TextStyle(
-      color: Colors.black,
-      fontWeight: FontWeight.w500,
-    ),
-  ),
-),
-          ],
-        ),
-        const Text(
-          'Pearl Bags',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        Row(
-          children: [
-            TextButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AccountScreen(),
+  Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+    return Container(
+      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      color: Colors.transparent,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // LEFT SIDE
+          Row(
+            children: [
+              HoverUnderlineText(
+                text: 'MENU',
+                onTap: () => context.read<DrawerProvider>().openLeft(),
+              ),
+              const SizedBox(width: 32),
+              HoverUnderlineText(
+                text: 'SEARCH',
+                onTap: () {
+                  widget.onSearchChanged?.call(true);
+                },
+              ),
+            ],
+          ),
+
+          // CENTER BRAND
+          const Text(
+            'Pearl Bags',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+
+          // RIGHT SIDE
+          Row(
+            children: [
+              HoverUnderlineText(
+                text: 'ACCOUNT',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AccountScreen()),
+                  );
+                },
+              ),
+              const SizedBox(width: 32),
+              HoverUnderlineText(
+                text: 'CART',
+                trailing: cart.itemCount > 0 ? ': ${cart.itemCount}' : null,
+                onTap: () => context.read<DrawerProvider>().openRight(),
+              ),
+            ],
+          ),
+        ],
       ),
     );
-  },
-  child: const Text('ACCOUNT'),
-),
-
-            Consumer<CartProvider>(
-              builder: (context, cart, _) => GestureDetector(
-                onTap: () =>
-                    context.read<DrawerProvider>().openRight(),
-                child: Row(
-                  children: [
-                    const Text('CART'),
-                    if (cart.itemCount > 0) Text(': ${cart.itemCount}'),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+  }
 }
 
 
-  // Widget _buildNormalHeader() {
-  //   return Container(
-  //     height: 80,
-  //     padding: const EdgeInsets.symmetric(horizontal: 32),
-  //     color: Colors.white,
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         Row(
-  //           children: [
-  //             TextButton(
-  //               onPressed: () => context.read<DrawerProvider>().openLeft(),
-  //               child: const Text('MENU'),
-  //             ),
-  //             TextButton(
-  //               onPressed: () {
-  //                 setState(() => _isSearching = true);
-  //                 widget.onSearchChanged?.call(true);
-  //               },
-  //               child: const Text('Search'),
-  //             ),
-  //           ],
-  //         ),
-  //         const Text(
-  //           'Pearl Bags',
-  //           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-  //         ),
-  //         Row(
-  //           children: [
-  //             TextButton(onPressed: () {}, child: const Text('ACCOUNT')),
-  //             Consumer<CartProvider>(
-  //               builder: (context, cart, _) => GestureDetector(
-  //                 onTap: () => context.read<DrawerProvider>().openRight(),
-  //                 child: Row(
-  //                   children: [
-  //                     const Text('CART'),
-  //                     if (cart.itemCount > 0) Text(': ${cart.itemCount}'),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+class HoverUnderlineText extends StatefulWidget {
+  final String text;
+  final VoidCallback onTap;
+  final String? trailing;
 
-//  Widget _buildSearchHeader() {
-//   return Container(
-//     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
-//     child: Column(
-//       children: [
-//         // 🔍 SEARCH BAR
-//         Row(
-//           children: [
-//             Expanded(
-//               child: TextField(
-//                 controller: _controller,
-//                 autofocus: true,
-//                 onChanged: _onSearch,
-//                 decoration: const InputDecoration(
-//                   hintText: 'Search products...',
-//                   border: OutlineInputBorder(),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(width: 10),
-//             IconButton(
-//   icon: const Icon(Icons.close),
-//   onPressed: () {
-//     setState(() {
-//       _isSearching = false;
-//       _controller.clear();
-//       _filteredProducts.clear();
-//     });
-//   },
-// ),
+  const HoverUnderlineText({
+    super.key,
+    required this.text,
+    required this.onTap,
+    this.trailing,
+  });
 
-//           ],
-//         ),
+  @override
+  State<HoverUnderlineText> createState() => _HoverUnderlineTextState();
+}
 
-//         const SizedBox(height: 10),
+class _HoverUnderlineTextState extends State<HoverUnderlineText> {
+  bool _hover = false;
 
-//         // 📦 SEARCH RESULTS
-//         Expanded(
-//           child: _filteredProducts.isEmpty
-//               ? const Center(child: Text('No products found'))
-//               : ListView.builder(
-//                   itemCount: _filteredProducts.length,
-//                   itemBuilder: (context, index) {
-//                     final product = _filteredProducts[index];
-//                     return ListTile(
-//                       leading: Image.asset(
-//                         product.imageUrl,
-//                         width: 40,
-//                         height: 40,
-//                         fit: BoxFit.cover,
-//                       ),
-//                       title: Text(product.name),
-//                       subtitle: Text('₹${product.price}'),
-//                       onTap: _clearSearch,
-//                     );
-//                   },
-//                 ),
-//         ),
-//       ],
-//     ),
-//   );
-// }
-
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.translucent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🔹 MAIN TEXT (underline applies here)
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.text,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      height: 1.2,
+                      width: _hover ? widget.text.length * 9.5 : 0,
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
+                // 🔹 TRAILING (fixed, separate, does not affect underline)
+                if (widget.trailing != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, top: 14),
+                    child: Text(
+                      widget.trailing!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
-
+}

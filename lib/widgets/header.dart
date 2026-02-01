@@ -47,21 +47,42 @@ class AppHeader extends StatelessWidget {
 }
 
 /// 🔹 NAV ITEM
-class _NavItem extends StatelessWidget {
+class _NavItem extends StatefulWidget {
   final String title;
   final VoidCallback onTap;
 
   const _NavItem({required this.title, required this.onTap});
 
   @override
+  State<_NavItem> createState() => _NavItemState();
+}
+
+class _NavItemState extends State<_NavItem> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              height: 1.2,
+              width: _hover ? widget.title.length * 10.0 : 0,
+              color: Colors.black,
+            ),
+          ],
         ),
       ),
     );

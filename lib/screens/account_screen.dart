@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/screens/change_password_screen.dart';
+import 'package:provider/provider.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -102,6 +104,7 @@ class AccountScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () async {
                         await FirebaseAuth.instance.signOut();
+                        context.read<CartProvider>().clearCart();
                         if (context.mounted) {
                           Navigator.of(
                             context,

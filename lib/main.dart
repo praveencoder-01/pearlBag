@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:food_website/auth_wrapper.dart';
+import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/providers/product_provider.dart';
 import 'package:food_website/theme/app_colors.dart';
@@ -10,7 +11,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 import 'providers/auth_provider.dart';
-import 'providers/cart_provider.dart';
 import 'providers/category_provider.dart';
 // import 'screens/home_screen.dart';
 
@@ -30,31 +30,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => DrawerProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-
-
-      ],
-      child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.scaffoldGrey,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.scaffoldGrey,
-          elevation: 0,
-        ),
-        fontFamily: 'Inter',
+  providers: [
+    ChangeNotifierProvider(create: (_) => AuthProvider()),
+    ChangeNotifierProvider(create: (_) => CartProvider()..loadCartFromFirestore()),
+    ChangeNotifierProvider(create: (_) => CategoryProvider()),
+    ChangeNotifierProvider(create: (_) => DrawerProvider()),
+    ChangeNotifierProvider(create: (_) => ProductProvider()),
+  ],
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+      scaffoldBackgroundColor: AppColors.scaffoldGrey,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.scaffoldGrey,
+        elevation: 0,
       ),
-
-      home: const AuthWrapper(),
-
+      fontFamily: 'Inter',
     ),
-    );
+    home: const AuthWrapper(),
+  ),
+);
   }
 }

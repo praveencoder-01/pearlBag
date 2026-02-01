@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_website/screens/all_products_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/drawer_provider.dart';
@@ -32,7 +33,7 @@ class SiteDrawerLeft extends StatelessWidget {
             padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children:  [
+              children: [
                 SizedBox(height: 15),
                 Center(
                   child: Text(
@@ -47,16 +48,15 @@ class SiteDrawerLeft extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 15),
-                _DrawerItem(title: 'VIEW EVERYTHING '),
-                _DrawerItem(title: 'NEW ARRIVALS'),
-                _DrawerItem(title: 'BEST SELLER'),
-                _DrawerItem(title: 'CASUAL BAGS'),
-                _DrawerItem(title: 'HANDBAGS'),
-                _DrawerItem(title: 'CLUTCHES'),
+                _DrawerItem(title: 'ALL ', category: null),
+                _DrawerItem(title: 'NEW ARRIVALS', category: 'new'),
+                _DrawerItem(title: 'BEST SELLER', category: 'best'),
+                _DrawerItem(title: 'CASUAL BAGS', category: 'casual'),
+                _DrawerItem(title: 'HANDBAGS', category: 'handbag'),
+                _DrawerItem(title: 'CLUTCHES', category: 'clutch'),
                 SizedBox(height: 280),
                 Divider(color: Colors.black12, thickness: 1),
                 _DrawerItem(title: 'ABOUT US'),
-
               ],
             ),
           ),
@@ -68,7 +68,8 @@ class SiteDrawerLeft extends StatelessWidget {
 
 class _DrawerItem extends StatefulWidget {
   final String title;
-  const _DrawerItem({required this.title});
+  final String? category;
+  const _DrawerItem({required this.title, this.category});
 
   @override
   State<_DrawerItem> createState() => _DrawerItemState();
@@ -85,7 +86,17 @@ class _DrawerItemState extends State<_DrawerItem> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () {
-          // navigation later
+          context.read<DrawerProvider>().closeAll();
+
+          Future.microtask(() {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    AllProductsScreen(initialCategory: widget.category),
+              ),
+            );
+          });
         },
         behavior: HitTestBehavior.translucent,
         child: Padding(
