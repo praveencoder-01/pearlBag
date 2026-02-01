@@ -158,7 +158,10 @@ class _MainLayoutState extends State<MainLayout> {
                                             _filteredProducts.clear();
                                           });
 
-                                          Navigator.of(context).push(
+                                          Navigator.of(
+                                            context,
+                                            rootNavigator: true,
+                                          ).push(
                                             MaterialPageRoute(
                                               builder: (_) =>
                                                   ProductDetailScreen(

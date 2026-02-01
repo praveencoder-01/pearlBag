@@ -17,6 +17,10 @@ class SiteDrawerRight extends StatelessWidget {
     final cart = context.watch<CartProvider>();
 
     if (!isOpen) return const SizedBox.shrink();
+    final cp = context.watch<CartProvider>();
+    print(
+      "🛒 CartScreen provider: ${identityHashCode(cp)} items=${cp.items.length}",
+    );
 
     return Stack(
       children: [
@@ -145,18 +149,16 @@ class SiteDrawerRight extends StatelessWidget {
                                 ),
                                 elevation: 4,
                               ),
-                              onPressed: () async {
+                              onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const CheckoutScreen(),
                                   ),
                                 );
-                                await context.read<CartProvider>().clearCart();
-
                               },
+
                               child: const Text(
-                                
                                 'CHECK OUT',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -238,35 +240,35 @@ class SiteDrawerRight extends StatelessWidget {
         ),
 
         // REMOVE
-     SizedBox(
-  width: 60,
-  child: GestureDetector(
-    onTap: () async {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
+        SizedBox(
+          width: 60,
+          child: GestureDetector(
+            onTap: () async {
+              final uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // 🔥 Firestore se delete
-      await FirebaseFirestore.instance
-          .collection('cart')
-          .doc(uid)
-          .collection('items')
-          .doc(product.id)
-          .delete();
+              // 🔥 Firestore se delete
+              await FirebaseFirestore.instance
+                  .collection('cart')
+                  .doc(uid)
+                  .collection('items')
+                  .doc(product.id)
+                  .delete();
 
-      // 🔥 Provider se bhi remove
-      cart.removeFromCart(product);
-    },
-    behavior: HitTestBehavior.opaque,
-    child: const Text(
-      'Remove',
-      textAlign: TextAlign.right,
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.black,
-        decoration: TextDecoration.none,
-      ),
-    ),
-  ),
-)
+              // 🔥 Provider se bhi remove
+              cart.removeFromCart(product);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: const Text(
+              'Remove',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

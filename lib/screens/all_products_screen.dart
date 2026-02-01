@@ -24,6 +24,10 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "normal=${Navigator.of(context).canPop()} root=${Navigator.of(context, rootNavigator: true).canPop()}",
+    );
+
     final filteredProducts = selectedCategory == null
         ? dummyProducts
         : dummyProducts.where((product) {

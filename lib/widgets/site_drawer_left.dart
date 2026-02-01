@@ -86,18 +86,22 @@ class _DrawerItemState extends State<_DrawerItem> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () {
-          context.read<DrawerProvider>().closeAll();
+  context.read<DrawerProvider>().closeAll();
 
-          Future.microtask(() {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    AllProductsScreen(initialCategory: widget.category),
-              ),
-            );
-          });
-        },
+  final nav = Navigator.of(context, rootNavigator: true);
+
+  // go back to root first
+  nav.popUntil((route) => route.isFirst);
+
+  // then open products
+  nav.push(
+    MaterialPageRoute(
+      builder: (_) => AllProductsScreen(initialCategory: widget.category),
+    ),
+  );
+},
+
+
         behavior: HitTestBehavior.translucent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),

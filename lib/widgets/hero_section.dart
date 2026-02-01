@@ -152,12 +152,10 @@ class _HeroSectionState extends State<HeroSection> {
                 GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AllProductsScreen(),
-                      ),
-                    );
+                    debugPrint("VIEW EVERYTHING TAPPED");
+                    Navigator.of(context, rootNavigator: true).push(
+  MaterialPageRoute(builder: (_) => const AllProductsScreen()),
+);
                   },
                   child: const Text(
                     'VIEW EVERYTHING',

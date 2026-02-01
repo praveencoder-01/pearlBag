@@ -58,13 +58,14 @@ class _ProductCardState extends State<ProductCard>
                 hoverColor: Colors.transparent,
 
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ProductDetailScreen(product: widget.product),
-                    ),
-                  );
+                  Navigator.of(context, rootNavigator: true).push(
+  MaterialPageRoute(
+    builder: (_) => ProductDetailScreen(product: widget.product),
+  ),
+);
+
+
+
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
