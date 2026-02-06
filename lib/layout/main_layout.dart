@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:food_website/data/dummy_images.dart';
+// import 'package:food_website/data/dummy_images.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
 import 'package:food_website/widgets/site_drawer_left.dart';
 import 'package:food_website/widgets/site_drawer_right.dart';
-import 'package:food_website/widgets/site_header.dart';
+// import 'package:food_website/widgets/site_header.dart';
 import 'package:provider/provider.dart';
 
 class MainLayout extends StatefulWidget {
@@ -24,11 +24,11 @@ class _MainLayoutState extends State<MainLayout> {
   final TextEditingController _searchController = TextEditingController();
 
   void _onSearch(String value) {
-    setState(() {
-      _filteredProducts = dummyProducts
-          .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
-          .toList();
-    });
+    // setState(() {
+    //   _filteredProducts = dummyProducts
+    //       .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
+    //       .toList();
+    // });
   }
 
   @override
@@ -46,11 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
         // 🔹 BACKGROUND
         Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [Color(0xFF2BC0E4), Color(0xFFEAECC6)],
-            ),
+            color: Color.fromARGB(57, 246, 241, 161),
           ),
         ),
 
@@ -58,11 +54,11 @@ class _MainLayoutState extends State<MainLayout> {
           backgroundColor: Colors.transparent,
 
           // 🔹 HEADER
-          appBar: SiteHeader(
-            onSearchChanged: (value) {
-              setState(() => _isSearching = value);
-            },
-          ),
+          // appBar: SiteHeader(
+          //   onSearchChanged: (value) {
+          //     setState(() => _isSearching = value);
+          //   },
+          // ),
 
           // 🔹 PAGE CONTENT (opacity here)
           body: Opacity(opacity: _isSearching ? 0.4 : 1, child: widget.child),

@@ -2,10 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/admin/admin_dashboard.dart';
-// import 'package:food_website/providers/cart_provider.dart';
-import 'package:food_website/screens/home_screen.dart';
+import 'package:food_website/main_shell.dart';
 import 'package:food_website/screens/login_screen.dart';
-// import 'package:provider/provider.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -54,7 +52,7 @@ class AuthWrapper extends StatelessWidget {
     if (adminSnap.data != null && adminSnap.data!.exists) {
       return const AdminDashboard();
     } else {
-      return const HomeScreen();
+      return const  MainShell();
     }
   },
 );

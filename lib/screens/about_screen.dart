@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/site_header.dart';
+// import '../widgets/site_header.dart';
 import '../widgets/site_footer.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -11,7 +11,7 @@ class AboutScreen extends StatelessWidget {
       body: Column(
         children: [
           // ✅ KEEP SAME HEADER
-          const SiteHeader(),
+          // const SiteHeader(),
 
           Expanded(
             child: SingleChildScrollView(

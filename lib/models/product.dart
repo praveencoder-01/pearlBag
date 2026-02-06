@@ -50,27 +50,34 @@ class Product {
   
 
   /// 🔥 FIRESTORE → PRODUCT
-  factory Product.fromMap(String id, Map<String, dynamic> map) {
+ factory Product.fromMap(String id, Map<String, dynamic> map) {
+  // images
   final List<String> imgs = map['imageUrls'] != null
       ? List<String>.from(map['imageUrls'])
       : [];
 
+  // infoSection safe parse (because sometimes it's "" in Firestore)
+  final infoRaw = map['infoSection'];
+  final Map<String, dynamic> infoMap =
+      infoRaw is Map<String, dynamic> ? infoRaw : <String, dynamic>{};
+
   return Product(
     id: id,
     name: map['name'] ?? '',
-    price: (map['price'] as num).toDouble(),
-    originalPrice:map['originalPrice'] != null? (map['originalPrice'] as num).toDouble():(map['price'] as num).toDouble(),
+    price: ((map['price'] ?? 0) as num).toDouble(),
+    originalPrice: map['originalPrice'] != null
+        ? (map['originalPrice'] as num).toDouble()
+        : ((map['price'] ?? 0) as num).toDouble(),
     category: map['category'] ?? '',
     description: map['description'] ?? '',
     images: imgs,
-    imageUrl: imgs.isNotEmpty ? imgs.first : '', // ✅ always String
-    cartImage: imgs.isNotEmpty ? imgs.first : '', // ✅ always String
+    imageUrl: imgs.isNotEmpty ? imgs.first : '',
+    cartImage: imgs.isNotEmpty ? imgs.first : '',
     quantity: map['quantity'] ?? 1,
-    infoSection: ProductInfoSectionData.fromMap(
-      map['infoSection'] ?? {},
-    ),
+    infoSection: ProductInfoSectionData.fromMap(infoMap),
   );
 }
+
 
 Product copyWith({
     int? quantity,

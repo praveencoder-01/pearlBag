@@ -39,7 +39,7 @@ class SiteDrawerRight extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              color: AppColors.scaffoldGrey,
+              color: AppColors.scaffold,
               padding: const EdgeInsets.all(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

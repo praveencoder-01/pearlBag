@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:food_website/screens/all_products_screen.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:food_website/screens/shop_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/drawer_provider.dart';
@@ -10,97 +11,100 @@ class SiteDrawerLeft extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOpen = context.watch<DrawerProvider>().isLeftOpen;
-    if (!isOpen) return const SizedBox.shrink();
-
-    return Stack(
-      children: [
-        // Positioned.fill(
-        //   child: GestureDetector(
-        //     onTap: () => context.read<DrawerProvider>().closeAll(),
-        //     child: Container(color: Colors.black.withOpacity(0.4)),
-        //   ),
-        // ),
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 320,
-          child: Container(
-            color: AppColors.scaffoldGrey,
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 15),
-                Center(
-                  child: Text(
-                    'Pearl bags',
-                    style: TextStyle(
-                      fontSize: 20,
-                      letterSpacing: 3.0,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black, //  force color
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
+    return Drawer(
+      child: Container(
+        color: AppColors.scaffold,
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 15),
+            Center(
+              child: Text(
+                'Pearl bags',
+                style: TextStyle(
+                  fontSize: 20,
+                  letterSpacing: 3.0,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black, //  force color
+                  decoration: TextDecoration.none,
                 ),
-                SizedBox(height: 15),
-                _DrawerItem(title: 'ALL ', category: null),
-                _DrawerItem(title: 'NEW ARRIVALS', category: 'new'),
-                _DrawerItem(title: 'BEST SELLER', category: 'best'),
-                _DrawerItem(title: 'CASUAL BAGS', category: 'casual'),
-                _DrawerItem(title: 'HANDBAGS', category: 'handbag'),
-                _DrawerItem(title: 'CLUTCHES', category: 'clutch'),
-                SizedBox(height: 280),
-                Divider(color: Colors.black12, thickness: 1),
-                _DrawerItem(title: 'ABOUT US'),
-              ],
+              ),
             ),
-          ),
+            SizedBox(height: 15),
+            _DrawerItem(
+              title: 'HOME',
+              category: '',
+              icon: FontAwesomeIcons.house,
+            ),
+            _DrawerItem(
+              title: 'ALL PRODUCTS',
+              category: null,
+              icon: FontAwesomeIcons.bagShopping,
+            ),
+            _DrawerItem(
+              title: 'NEW ARRIVALS',
+              category: 'new',
+              icon: Icons.fiber_new_outlined,
+            ),
+            _DrawerItem(
+              title: 'BEST SELLER',
+              category: 'best',
+              icon: Icons.local_fire_department_outlined,
+            ),
+            _DrawerItem(
+              title: 'WISHLIST',
+              category: 'wishlist',
+              icon: Icons.favorite,
+            ),
+            _DrawerItem(
+              title: 'MY ORDER',
+              category: '',
+              icon: Icons.fire_truck_rounded,
+            ),
+            SizedBox(height: 350),
+            Divider(color: Colors.black12, thickness: 1),
+            _DrawerItem(title: 'ABOUT US', icon: Icons.circle_outlined),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
 class _DrawerItem extends StatefulWidget {
   final String title;
+  final IconData icon;
   final String? category;
-  const _DrawerItem({required this.title, this.category});
+  const _DrawerItem({required this.title, this.category, required this.icon});
 
   @override
   State<_DrawerItem> createState() => _DrawerItemState();
 }
 
 class _DrawerItemState extends State<_DrawerItem> {
-  bool _isHovered = false;
+  // bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () {
-  context.read<DrawerProvider>().closeAll();
+          context.read<DrawerProvider>().closeAll();
 
-  final nav = Navigator.of(context, rootNavigator: true);
+          final nav = Navigator.of(context, rootNavigator: true);
 
-  // go back to root first
-  nav.popUntil((route) => route.isFirst);
+          // go back to root first
+          nav.popUntil((route) => route.isFirst);
 
-  // then open products
-  nav.push(
-    MaterialPageRoute(
-      builder: (_) => AllProductsScreen(initialCategory: widget.category),
-    ),
-  );
-},
-
+          // then open products
+          nav.push(
+            MaterialPageRoute(
+              builder: (_) => ShopScreen(initialCategory: widget.category),
+            ),
+          );
+        },
 
         behavior: HitTestBehavior.translucent,
         child: Padding(
@@ -109,36 +113,26 @@ class _DrawerItemState extends State<_DrawerItem> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  letterSpacing: 1.4,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black, //  force color
-                  decoration: TextDecoration.none,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              //  Animated underline
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                height: 1.2,
-                width: _isHovered ? _textWidth(widget.title) : 0,
-                color: Colors.black.withOpacity(0.7),
+              Row(
+                children: [
+                  Icon(widget.icon),
+                  SizedBox(width: 10),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      letterSpacing: 1.4,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black, //  force color
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  // Simple width calculation for underline
-  double _textWidth(String text) {
-    return text.length * 9.9;
   }
 }

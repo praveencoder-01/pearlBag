@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:food_website/data/dummy_images.dart';
+// import 'package:food_website/data/dummy_images.dart';
 import 'package:food_website/layout/main_layout.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/widgets/material_section.dart';
-import 'package:food_website/widgets/product_horizontal_list.dart';
+// import 'package:food_website/widgets/product_horizontal_list.dart';
 import 'package:food_website/widgets/product_info_image_section.dart';
 import 'package:food_website/widgets/site_footer.dart';
 import 'package:provider/provider.dart';
@@ -33,10 +33,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
 
-    suggestedProducts = dummyProducts
-        .where((p) => p.id != widget.product.id)
-        .take(4)
-        .toList();
+    // suggestedProducts = dummyProducts
+        // .where((p) => p.id != widget.product.id)
+        // .take(4)
+        // .toList();
   }
 
   Widget _buildSectionContent() {
@@ -469,7 +469,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               const SizedBox(height: 26),
 
-              ProductHorizontalList(products: dummyProducts),
+              // ProductHorizontalList(products: dummyProducts),
 
               const SiteFooter(),
             ],

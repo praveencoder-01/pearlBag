@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:food_website/auth_wrapper.dart';
+import 'package:food_website/core/theme.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
-import 'package:food_website/providers/product_provider.dart';
-import 'package:food_website/theme/app_colors.dart';
+// import 'package:food_website/providers/product_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,18 +35,13 @@ class MyApp extends StatelessWidget {
     ChangeNotifierProvider(create: (_) => AuthProvider()),
     ChangeNotifierProvider(create: (_) => CategoryProvider()),
     ChangeNotifierProvider(create: (_) => DrawerProvider()),
-    ChangeNotifierProvider(create: (_) => ProductProvider()),
+    // ChangeNotifierProvider(create: (_) => ProductProvider()),
   ],
   child: MaterialApp(
+    
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      scaffoldBackgroundColor: AppColors.scaffoldGrey,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.scaffoldGrey,
-        elevation: 0,
-      ),
-      fontFamily: 'Inter',
-    ),
+    theme: appTheme,
+
     home: const AuthWrapper(),
   ),
 );

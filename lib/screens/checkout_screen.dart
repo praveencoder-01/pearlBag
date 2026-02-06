@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
@@ -14,6 +15,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  
   final flatController = TextEditingController(); // Flat, House no...
   final areaController = TextEditingController(); // Area, street...
   final landmarkController = TextEditingController(); // Landmark
@@ -21,16 +23,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final cityController = TextEditingController(); // Town/City (same name ok)
   final stateController = TextEditingController(); // State (same)
   final countryController = TextEditingController(); // Country (same)
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
 
   bool isLoading = false;
   bool rememberAddress = false;
-  
+  String? phoneError;
+  String? pincodeError;
+String? nameError;
+
+
+  bool phoneTouched = false;
+  bool pincodeTouched = false;
+  bool submitted = false;
 
   @override
   void initState() {
     super.initState();
     loadSavedAddress();
+    nameController.text = FirebaseAuth.instance.currentUser?.displayName ?? "";
+  }
+
+  @override
+  void dispose() {
+    flatController.dispose();
+    areaController.dispose();
+    landmarkController.dispose();
+    pincodeController.dispose();
+    cityController.dispose();
+    stateController.dispose();
+    countryController.dispose();
+
+    nameController.dispose();
+    phoneController.dispose();
+
+    super.dispose();
   }
 
   Future<void> loadSavedAddress() async {
@@ -65,43 +94,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return context.read<CartProvider>().totalPrice;
   }
 
-Future<void> placeOrder(
-  BuildContext context,
-  List<Product> cartItems,
-  Map<String, dynamic> address,
-) async {
-  try {
-    final user = FirebaseAuth.instance.currentUser!;
-    final orderRef = FirebaseFirestore.instance.collection('orders').doc();
+  Future<void> placeOrder(
+    BuildContext context,
+    List<Product> cartItems,
+    Map<String, dynamic> address,
+  ) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final orderRef = FirebaseFirestore.instance.collection('orders').doc();
 
-    final orderItems = cartItems.map((item) {
-      return {
-        'productId': item.id,
-        'name': item.name,
-        'price': item.price,
-        'quantity': item.quantity,
-        'imageUrl': item.imageUrl,
-      };
-    }).toList();
+      final orderItems = cartItems.map((item) {
+        return {
+          'productId': item.id,
+          'name': item.name,
+          'price': item.price,
+          'quantity': item.quantity,
+          'imageUrl': item.imageUrl,
+        };
+      }).toList( );
 
-    await orderRef.set({
-      'userId': user.uid,
-      'items': orderItems,
-      'totalAmount': calculateTotal(context),
-      'shippingAddress': address,
-      'orderStatus': 'Pending',
-      'paymentStatus': 'COD',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      await orderRef.set({
+        'customerName': nameController.text.trim(),
+        'customerPhone': phoneController.text.trim(),
+        'userId': user.uid,
+        'items': orderItems,
+        'totalAmount': calculateTotal(context), 
+        'shippingAddress': address,
+        'orderStatus': 'Pending',
+        'paymentStatus': 'COD',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    await context.read<CartProvider>().clearCart();
-  } catch (e) {
-    // ignore: avoid_print
-    rethrow;
+      await context.read<CartProvider>().clearCart();
+    } catch (e) {
+      // ignore: avoid_print
+      rethrow;
+    }
   }
-}
-
-
 
   Widget _sectionCard({required String title, required Widget child}) {
     return Container(
@@ -157,6 +186,37 @@ Future<void> placeOrder(
     );
   }
 
+  Widget _digitInput({
+    required TextEditingController controller,
+    required String label,
+    required String? errorText,
+    required void Function(String) onChanged,
+    int? maxLength,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+        ],
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          errorText: errorText, // 🔴 red message inside box
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
   Widget _priceRow(String label, double value, {bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -203,32 +263,40 @@ Future<void> placeOrder(
                   child: Column(
                     children: [
                       TextFormField(
-                        initialValue:
-                            FirebaseAuth.instance.currentUser?.displayName ??
-                            "",
-                        readOnly: true,
+                        controller: nameController,
                         decoration: InputDecoration(
                           labelText: "Name",
                           filled: true,
                           fillColor: Colors.grey.shade100,
+                          errorText: nameError, 
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
                         ),
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? "Required" : null,
                       ),
                       const SizedBox(height: 14),
-                      TextFormField(
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          labelText: "Phone Number",
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
+                      _digitInput(
+                        controller: phoneController,
+                        label: "Phone Number",
+                        errorText: phoneError,
+                        maxLength: 10, // optional
+                        onChanged: (value) {
+                          phoneTouched = true;
+
+                          setState(() {
+                            final v = value.trim();
+
+                            // ✅ Only show error when field becomes empty
+                            if (v.isEmpty) {
+                              phoneError = "Required";
+                            } else {
+                              phoneError = null; // ✅ no message while typing
+                            }
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -247,7 +315,26 @@ Future<void> placeOrder(
                         ),
                         _input(areaController, "Area, Street, Sector, Village"),
                         _input(landmarkController, "Landmark"),
-                        _input(pincodeController, "Pincode"),
+                        _digitInput(
+                          controller: pincodeController,
+                          label: "Pincode",
+                          errorText: pincodeError,
+                          maxLength: 6, // optional
+                          onChanged: (value) {
+                            pincodeTouched = true;
+
+                            setState(() {
+                              final v = value.trim();
+
+                              if (v.isEmpty) {
+                                pincodeError = "Required";
+                              } else {
+                                pincodeError = null;
+                              }
+                            });
+                          },
+                        ),
+
                         _input(cityController, "Town/City"),
                         _input(stateController, "State"),
                         _input(countryController, "Country"),
@@ -348,86 +435,122 @@ Future<void> placeOrder(
                       ),
                     ),
                     onPressed: isLoading
-    ? null
-    : () async {
+                        ? null
+                        : () async {
+                            submitted = true;
 
-final ok = _formKey.currentState?.validate() ?? false;
+final name = nameController.text.trim();
+final phone = phoneController.text.trim();
+final pin = pincodeController.text.trim();
 
-if (!ok) {
+setState(() {
+  nameError = name.isEmpty ? "Required" : null;
+
+  phoneError = phone.isEmpty
+      ? "Required"
+      : (phone.length != 10 ? "Enter 10-digit phone number" : null);
+
+  pincodeError = pin.isEmpty
+      ? "Required"
+      : (pin.length != 6 ? "Enter 6-digit pincode" : null);
+});
+
+// ✅ SAME message as address
+if (nameError != null || phoneError != null || pincodeError != null) {
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Please fill all required fields")),
+    const SnackBar(
+      content: Text("Please fill all required fields"),
+    ),
   );
   return;
 }
-        if (!_formKey.currentState!.validate()) return;
 
-        setState(() => isLoading = true);
+                            final ok =
+                                _formKey.currentState?.validate() ?? false;
 
-        try {
-          final user = FirebaseAuth.instance.currentUser;
-          if (user == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Please login again")),
-            );
-            return;
-          }
+                            if (!ok) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Please fill all required fields",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            if (!_formKey.currentState!.validate()) return;
 
-          final address = {
-            'flat': flatController.text.trim(),
-            'area': areaController.text.trim(),
-            'landmark': landmarkController.text.trim(),
-            'pincode': pincodeController.text.trim(),
-            'city': cityController.text.trim(),
-            'state': stateController.text.trim(),
-            'country': countryController.text.trim(),
-          };
+                            setState(() => isLoading = true);
 
-          if (rememberAddress) {
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .collection('addresses')
-                .add({
-              ...address,
-              'isDefault': true,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-          }
+                            try {
+                              final user = FirebaseAuth.instance.currentUser;
+                              if (user == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Please login again"),
+                                  ),
+                                );
+                                return;
+                              }
 
-          await placeOrder(context, cartItems, address);
-          context.read<DrawerProvider>().closeAll();
+                              final address = {
+                                'flat': flatController.text.trim(),
+                                'area': areaController.text.trim(),
+                                'landmark': landmarkController.text.trim(),
+                                'pincode': pincodeController.text.trim(),
+                                'city': cityController.text.trim(),
+                                'state': stateController.text.trim(),
+                                'country': countryController.text.trim(),
+                              };
 
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text("Order Placed"),
-              content: const Text("Your order has been placed successfully."),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text("OK"),
-                ),
-              ],
-            ),
-          );
-        } catch (e) {
-          // ✅ exact error aayega yaha
-          // ignore: avoid_print
-          // print("❌ CHECKOUT ERROR: $e");  
+                              if (rememberAddress) {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(user.uid)
+                                    .collection('addresses')
+                                    .add({
+                                      ...address,
+                                      'isDefault': true,
+                                      'createdAt': FieldValue.serverTimestamp(),
+                                    });
+                              }
 
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Order failed: $e")),
-            );
-          }
-        } finally {
-          if (mounted) setState(() => isLoading = false);
-        }
-      },
+                              await placeOrder(context, cartItems, address);
+                              context.read<DrawerProvider>().closeAll();
+
+                              if (!mounted) return;
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text("Order Placed"),
+                                  content: const Text(
+                                    "Your order has been placed successfully.",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("OK"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } catch (e) {
+                              // ✅ exact error aayega yaha
+                              // ignore: avoid_print
+                              // print("❌ CHECKOUT ERROR: $e");
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Order failed: $e")),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => isLoading = false);
+                            }
+                          },
 
                     child: isLoading
                         ? const SizedBox(

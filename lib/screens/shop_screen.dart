@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:food_website/data/dummy_images.dart';
+// import 'package:food_website/data/dummy_images.dart';
 import 'package:food_website/layout/main_layout.dart';
 // import 'package:food_website/data/products.dart';
-import 'package:food_website/widgets/product_card.dart';
+// import 'package:food_website/widgets/product_card.dart';
 
-class AllProductsScreen extends StatefulWidget {
+class ShopScreen extends StatefulWidget {
   final String? initialCategory;
 
-  const AllProductsScreen({super.key, this.initialCategory});
+  const ShopScreen({super.key, this.initialCategory});
 
   @override
-  State<AllProductsScreen> createState() => _AllProductsScreenState();
+  State<ShopScreen> createState() => _ShopScreenState();
 }
 
-class _AllProductsScreenState extends State<AllProductsScreen> {
+class _ShopScreenState extends State<ShopScreen> {
   String? selectedCategory;
 
   @override
@@ -28,11 +28,11 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
       "normal=${Navigator.of(context).canPop()} root=${Navigator.of(context, rootNavigator: true).canPop()}",
     );
 
-    final filteredProducts = selectedCategory == null
-        ? dummyProducts
-        : dummyProducts.where((product) {
-            return product.category.toLowerCase() == selectedCategory;
-          }).toList();
+    // final filteredProducts = selectedCategory == null
+    //     ? dummyProducts
+    //     : dummyProducts.where((product) {
+    //         return product.category.toLowerCase() == selectedCategory;
+    //       }).toList();
     return MainLayout(
       child: CustomScrollView(
         slivers: [
@@ -59,26 +59,25 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
           ),
 
           // 🔹 PRODUCTS GRID
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final product = filteredProducts[index];
+          // SliverPadding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   sliver: SliverGrid(
+          //     delegate: SliverChildBuilderDelegate((context, index) {
+          //       final product = filteredProducts[index];
 
-                return ProductCard(product: product);
-              }, childCount: filteredProducts.length),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 24,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.15,
-              ),
-            ),
-          ),
+          //       return ProductCard(product: product);
+          //     }, childCount: filteredProducts.length),
+          //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          //       crossAxisCount: 3,
+          //       crossAxisSpacing: 24,
+          //       mainAxisSpacing: 8,
+          //       childAspectRatio: 1.15,
+          //     ),
+          //   ),
+          // ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
-      ),
-    );
+      ),);
   }
 }

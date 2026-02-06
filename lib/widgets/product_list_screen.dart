@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
-import 'package:food_website/providers/product_provider.dart';
-import 'package:provider/provider.dart';
+// import 'package:food_website/providers/product_provider.dart';
+// import 'package:provider/provider.dart';
 
 class SearchOverlay extends StatefulWidget {
   const SearchOverlay({super.key});
@@ -21,7 +21,7 @@ class _SearchOverlayState extends State<SearchOverlay> {
     super.initState();
 
     // 🔹 GET PRODUCTS FROM PROVIDER
-    allProducts = context.read<ProductProvider>().products;
+    // allProducts = context.read<ProductProvider>().products;
 
     filtered = allProducts;
 

@@ -17,60 +17,57 @@ class CartScreen extends StatelessWidget {
           : ListView.builder(
               itemCount: cart.items.length,
               itemBuilder: (context, index) {
-
                 final product = cart.items[index];
 
                 return Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.start, // align top
-    children: [
-      // 🖼 Product Image
-      ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: ConstrainedBox(
-  constraints: const BoxConstraints(
-    maxWidth: 60, 
-  ),
-  child: Image.network(
-    product.cartImage,
-    fit: BoxFit.fitWidth,
-  ),
-),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start, // align top
+                    children: [
+                      // 🖼 Product Image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 60),
+                          child: Image.network(
+                            product.cartImage,
+                            fit: BoxFit.fitWidth,
+                          ),
+                        ),
+                      ),
 
-      ),
+                      const SizedBox(width: 12),
 
-      const SizedBox(width: 12),
+                      // Product name + price
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('₹${product.price}'),
+                          ],
+                        ),
+                      ),
 
-      // Product name + price
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              product.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text('₹${product.price}'),
-          ],
-        ),
-      ),
-
-      // Remove button
-      IconButton(
-        icon: const Icon(Icons.delete),
-        onPressed: () {
-          cart.removeFromCart(product);
-        },
-      ),
-    ],
-  ),
-);
-
-
+                      // Remove button
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          cart.removeFromCart(product);
+                        },
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
     );
