@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:food_website/data/dummy_images.dart';
 import 'package:food_website/models/product.dart';
-import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
-import 'package:food_website/widgets/site_drawer_left.dart';
-import 'package:food_website/widgets/site_drawer_right.dart';
-// import 'package:food_website/widgets/site_header.dart';
-import 'package:provider/provider.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
@@ -39,7 +33,6 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final drawer = context.watch<DrawerProvider>();
 
     return Stack(
       children: [
@@ -177,16 +170,6 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             ],
           ),
-
-        // 🔹 CLOSE DRAWER OVERLAY
-        if (drawer.isAnyOpen)
-          GestureDetector(
-            onTap: () => drawer.closeAll(),
-            child: Container(color: Colors.black.withOpacity(0.4)),
-          ),
-
-        const SiteDrawerLeft(),
-        const SiteDrawerRight(),
       ],
     );
   }

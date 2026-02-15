@@ -4,6 +4,9 @@ import 'package:food_website/auth_wrapper.dart';
 import 'package:food_website/core/theme.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
+import 'package:food_website/providers/user_provider.dart';
+import 'package:food_website/screens/cart_screen.dart';
+import 'package:food_website/screens/checkout_screen.dart';
 // import 'package:food_website/providers/product_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -32,13 +35,17 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (_) => CartProvider()),
+    ChangeNotifierProvider(create: (_) => UserProvider()..loadProfile()),
     ChangeNotifierProvider(create: (_) => AuthProvider()),
     ChangeNotifierProvider(create: (_) => CategoryProvider()),
     ChangeNotifierProvider(create: (_) => DrawerProvider()),
     // ChangeNotifierProvider(create: (_) => ProductProvider()),
   ],
   child: MaterialApp(
-    
+    routes: {
+    '/cart': (context) => const CartScreen(),
+    '/checkout': (context) => const CheckoutScreen(),
+  },
     debugShowCheckedModeBanner: false,
     theme: appTheme,
 

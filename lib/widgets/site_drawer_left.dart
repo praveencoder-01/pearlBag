@@ -91,17 +91,14 @@ class _DrawerItemState extends State<_DrawerItem> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
+          Navigator.pop(context); // ✅ 1) Drawer close (MOST IMPORTANT)
+
+          // (optional) agar tum DrawerProvider use kar rahe ho
           context.read<DrawerProvider>().closeAll();
 
-          final nav = Navigator.of(context, rootNavigator: true);
-
-          // go back to root first
-          nav.popUntil((route) => route.isFirst);
-
-          // then open products
-          nav.push(
+          Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(
-              builder: (_) => ShopScreen(initialCategory: widget.category),
+              builder: (_) => ShopScreen(initialCategory: widget.category, searchQuery: "", ),
             ),
           );
         },

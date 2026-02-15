@@ -20,49 +20,66 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final priceController = TextEditingController();
   final categoryController = TextEditingController();
   final imageUrlController = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _shipCtrl = TextEditingController();
+  final _returnCtrl = TextEditingController();
+  final _materialCtrl = TextEditingController();
+  final _closureCtrl = TextEditingController();
+  final _weightCtrl = TextEditingController();
+  final _idealForCtrl = TextEditingController();
+
 
   bool isAvailable = true;
+  
   bool isLoading = false;
 
   List<XFile?> pickedImages = [null, null, null, null];
   List<String?> uploadedImageUrls = [null, null, null, null];
   bool isUploadingImage = false;
 
-Future<void> addProduct() async {
-  if (!_formKey.currentState!.validate()) return;
+  Future<void> addProduct() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  // 🔴 IMPORTANT CHECK
-  if (uploadedImageUrls.where((e) => e != null).isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please upload at least one image')),
-    );
-    return;
+    // 🔴 IMPORTANT CHECK
+    if (uploadedImageUrls.where((e) => e != null).isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload at least one image')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      await FirebaseFirestore.instance.collection('products').add({
+        'name': nameController.text.trim(),
+        'price': double.parse(priceController.text.trim()),
+        'category': categoryController.text.trim(),
+        'imageUrls': uploadedImageUrls.where((e) => e != null).toList(),
+        'isAvailable': isAvailable,
+        'description': _descCtrl.text.trim(),
+        'shippingPolicy': _shipCtrl.text.trim(),
+        'returnPolicy': _returnCtrl.text.trim(),
+        'closure': _materialCtrl.text.trim(),
+        'material': _closureCtrl.text.trim(),
+        'weight': _weightCtrl.text.trim(),
+        'idealFor': _idealForCtrl.text.trim(),
+
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product added successfully')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+
+    setState(() => isLoading = false);
   }
-
-  setState(() => isLoading = true);
-
-  try {
-    await FirebaseFirestore.instance.collection('products').add({
-      'name': nameController.text.trim(),
-      'price': double.parse(priceController.text.trim()),
-      'category': categoryController.text.trim(),
-      'imageUrls': uploadedImageUrls.where((e) => e != null).toList(),
-      'isAvailable': isAvailable,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product added successfully')),
-    );
-
-    Navigator.pop(context);
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(e.toString())));
-  }
-
-  setState(() => isLoading = false);
-}
 
   Future<void> pickImage(int index) async {
     final picker = ImagePicker();
@@ -234,6 +251,53 @@ Future<void> addProduct() async {
                     ),
 
                     const SizedBox(height: 22),
+
+                    const SizedBox(height: 18),
+
+                    /// DESCRIPTION
+                    TextFormField(
+  controller: _descCtrl,
+  maxLines: 5,
+  validator: (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
+  decoration: const InputDecoration(
+    labelText: "Description",
+    border: OutlineInputBorder(),
+    alignLabelWithHint: true,
+  ),
+),
+
+
+                    const SizedBox(height: 14),
+
+                    /// SHIPPING POLICY
+                   TextFormField(
+  controller: _shipCtrl,
+  maxLines: 4,
+  validator: (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
+  decoration: const InputDecoration(
+    labelText: "Shipping Policy",
+    border: OutlineInputBorder(),
+    alignLabelWithHint: true,
+  ),
+),
+
+
+                    const SizedBox(height: 14),
+
+                    /// RETURN POLICY
+                    TextFormField(
+  controller: _returnCtrl,
+  maxLines: 4,
+  validator: (v) => (v == null || v.trim().isEmpty) ? "Required" : null,
+  decoration: const InputDecoration(
+    labelText: "Return Policy",
+    border: OutlineInputBorder(),
+    alignLabelWithHint: true,
+  ),
+),
+
+
+
 
                     /// BUTTON
                     isLoading

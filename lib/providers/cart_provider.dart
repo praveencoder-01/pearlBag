@@ -21,7 +21,7 @@ class CartProvider with ChangeNotifier {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
 
-  CartProvider(){
+  CartProvider() {
     // ignore: avoid_print
     print("✅ CartProvider CREATED: ${identityHashCode(this)}");
   }
@@ -36,59 +36,60 @@ class CartProvider with ChangeNotifier {
       _items.add(product.copyWith(quantity: product.quantity));
     }
 
-    print("✅ addToCart items=${_items.length}"); // debug
-
     notifyListeners();
     await _saveCartToFirestore();
   }
 
-Future<void> syncFromFirestore() async {
-  final user = _auth.currentUser;
-  if (user == null) return;
+  Future<void> syncFromFirestore() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
 
-  final doc = await _firestore.collection('cart').doc(user.uid).get();
+    final doc = await _firestore.collection('cart').doc(user.uid).get();
 
-  // ✅ If doc not exists, DON'T clear local cart
-  if (!doc.exists) return;
+    // ✅ If doc not exists, DON'T clear local cart
+    if (!doc.exists) return;
 
-  final data = doc.data();
+    final data = doc.data();
 
-  // ✅ If data/items missing, DON'T clear local cart
-  if (data == null || data['items'] == null) return;
+    // ✅ If data/items missing, DON'T clear local cart
+    if (data == null || data['items'] == null) return;
 
-  final List itemsList = List.from(data['items']);
+    final List itemsList = List.from(data['items']);
 
-  // ✅ If firestore items empty, DON'T clear local cart (prevents accidental wipe)
-  if (itemsList.isEmpty) return;
+    // ✅ If firestore items empty, DON'T clear local cart (prevents accidental wipe)
+    if (itemsList.isEmpty) return;
 
-  // ✅ Now it's safe to replace local state
-  _items.clear();
+    // ✅ Now it's safe to replace local state
+    _items.clear();
 
-  for (final item in itemsList) {
-    _items.add(
-      Product(
-        id: item['id'] ?? '',
-        name: item['name'] ?? '',
-        price: (item['price'] ?? 0).toDouble(),
-        originalPrice: (item['price'] ?? 0).toDouble(),
-        category: item['category'] ?? '',
-        description: '',
-        images: const [],
-        imageUrl: item['cartImage'] ?? '',
-        cartImage: item['cartImage'] ?? '',
-        quantity: item['quantity'] ?? 1,
-        infoSection: ProductInfoSectionData(
-          title: '',
-          description: '',
-          image: '',
+    for (final item in itemsList) {
+      _items.add(
+        Product(
+          id: item['id'] ?? '',
+          name: item['name'] ?? '',
+          price: ((item['price'] ?? 0) as num).toDouble(),
+          originalPrice: ((item['originalPrice'] ?? item['price'] ?? 0) as num).toDouble(),
+          category: item['category'] ?? '',
+          description: (item['description'] ?? '').toString(),
+          shippingPolicy: (item['shippingPolicy'] ?? '').toString(),
+          returnPolicy: (item['returnPolicy'] ?? '').toString(),
+          specs: Map<String, String>.from(item['specs'] ?? {}),
+
+          images: const [],
+          imageUrl: item['cartImage'] ?? '',
+          cartImage: item['cartImage'] ?? '',
+          quantity: item['quantity'] ?? 1,
+          infoSection: ProductInfoSectionData(
+            title: '',
+            description: '',
+            image: '',
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    notifyListeners();
   }
-
-  notifyListeners();
-}
-
 
   // 🔥 REMOVE
   Future<void> removeFromCart(Product product) async {
@@ -122,6 +123,12 @@ Future<void> syncFromFirestore() async {
               'quantity': p.quantity,
               'cartImage': p.cartImage,
               'category': p.category,
+              'originalPrice': p.originalPrice,
+              'description': p.description,
+              'shippingPolicy': p.shippingPolicy,
+              'returnPolicy': p.returnPolicy,
+              'specs': p.specs,
+
             },
           )
           .toList(),
@@ -130,7 +137,6 @@ Future<void> syncFromFirestore() async {
 
   // 🔥 CLEAR CART AFTER ORDER
   Future<void> clearCart() async {
-    print("🧨 clearCart CALLED");
     _items.clear();
     notifyListeners();
 
@@ -143,44 +149,79 @@ Future<void> syncFromFirestore() async {
   }
 
   // 🔥 LOAD CART (MOST IMPORTANT)
-Future<void> loadCartFromFirestore() async {
-  final user = _auth.currentUser;
-  if (user == null) return;
+  Future<void> loadCartFromFirestore() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
 
-  final doc = await _firestore.collection('cart').doc(user.uid).get();
-  if (!doc.exists) return;
+    final doc = await _firestore.collection('cart').doc(user.uid).get();
+    if (!doc.exists) return;
 
-  final data = doc.data();
-  if (data == null || data['items'] == null) return;
+    final data = doc.data();
+    if (data == null || data['items'] == null) return;
 
-  final List itemsList = List.from(data['items']);
+    final List itemsList = List.from(data['items']);
 
-  // ✅ If firestore empty, don't wipe local cart
-  if (itemsList.isEmpty) return;
+    // ✅ If firestore empty, don't wipe local cart
+    if (itemsList.isEmpty) return;
 
-  _items.clear(); // ✅ clear only after valid items found
+    _items.clear(); // ✅ clear only after valid items found
 
-  for (final item in itemsList) {
-    _items.add(
-      Product(
-        id: item['id'] ?? '',
-        name: item['name'] ?? '',
-        price: (item['price'] ?? 0).toDouble(),
-        originalPrice: (item['price'] ?? 0).toDouble(),
-        category: item['category'] ?? '',
-        description: '',
-        images: const [],
-        imageUrl: item['cartImage'] ?? '',
-        cartImage: item['cartImage'] ?? '',
-        quantity: item['quantity'] ?? 1,
-        infoSection: ProductInfoSectionData(title: '', description: '', image: ''),
-      ),
-    );
+    for (final item in itemsList) {
+      _items.add(
+        Product(
+          id: item['id'] ?? '',
+          name: item['name'] ?? '',
+          price: ((item['price'] ?? 0) as num).toDouble(),
+          originalPrice: ((item['originalPrice'] ?? item['price'] ?? 0) as num)
+              .toDouble(),
+
+          category: item['category'] ?? '',
+          description: (item['description'] ?? '').toString(),
+          shippingPolicy: (item['shippingPolicy'] ?? '').toString(),
+          returnPolicy: (item['returnPolicy'] ?? '').toString(),
+          specs: Map<String, String>.from(item['specs'] ?? {}),
+          images: const [],
+          imageUrl: item['cartImage'] ?? '',
+          cartImage: item['cartImage'] ?? '',
+          quantity: ((item['quantity'] ?? 1) as int),
+          infoSection: ProductInfoSectionData(
+            title: '',
+            description: '',
+            image: '',
+          ),
+        ),
+      );
+    }
+
+    notifyListeners();
   }
 
-  notifyListeners();
+// ✅ subtotal = sum(price * qty)
+double get subTotal {
+  double total = 0;
+  for (final item in _items) {
+    total += item.price * item.quantity;
+  }
+  return total;
 }
 
+// ✅ shipping rule: FREE above 1000 else 49
+double get shippingFee {
+  if (subTotal >= 1000) return 0;
+  return 49;
+}
+
+// ✅ bag total = subtotal + shipping
+double get bagTotal => subTotal + shippingFee;
+
+// ✅ optional: total quantity of items (1+2+1 = 4)
+int get totalItemsQty {
+  int total = 0;
+  for (final item in _items) {
+    total += item.quantity;
+  }
+  return total;
+}
 
 
 }

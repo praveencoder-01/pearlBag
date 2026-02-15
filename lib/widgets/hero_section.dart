@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
-import 'package:food_website/screens/shop_screen.dart';
+import 'package:food_website/widgets/app_navigation.dart';
 import 'package:food_website/widgets/feature_icons_row.dart';
 import 'package:food_website/widgets/home_feature_section.dart';
 import 'package:food_website/widgets/product_card.dart';
-// import 'package:food_website/models/product.dart';
 
 class HeroSection extends StatefulWidget {
   const HeroSection({super.key});
@@ -18,16 +17,10 @@ class HeroSection extends StatefulWidget {
 
 class _HeroSectionState extends State<HeroSection> {
   final PageController _controller = PageController();
-  int _page = 0;
+  int page = 0;
   Timer? _timer;
   final ScrollController _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  final ValueNotifier<int> _pageNotifier = ValueNotifier(0);
 
   @override
   void initState() {
@@ -35,14 +28,25 @@ class _HeroSectionState extends State<HeroSection> {
     _startScroll();
   }
 
-  void _startScroll() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!_scrollController.hasClients) return;
-      int nextPage = _page + 1;
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _pageNotifier.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-      if (nextPage >= 2) {
-        nextPage = 0;
-      }
+  void _startScroll() {
+    _timer?.cancel();
+
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!_controller.hasClients) return;
+
+      final current = _pageNotifier.value;
+      final nextPage = (current + 1) % 2; // 2 = itemCount
+
+      _pageNotifier.value = nextPage; // keep state in sync immediately
 
       _controller.animateToPage(
         nextPage,
@@ -64,15 +68,12 @@ class _HeroSectionState extends State<HeroSection> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Popular Categories',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
+                Text(
+                  'Popular Categories',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 SizedBox(height: 12),
@@ -81,7 +82,7 @@ class _HeroSectionState extends State<HeroSection> {
                   height: 140,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    // padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       CategoryChip(
                         image:
@@ -117,14 +118,16 @@ class _HeroSectionState extends State<HeroSection> {
                 ),
 
                 SizedBox(
-                  height: 160,
+                  height: 130,
                   child: PageView.builder(
                     controller: _controller,
                     itemCount: 2,
-                    onPageChanged: (i) => setState(() => _page = i),
+                    onPageChanged: (i) => _pageNotifier.value = i,
+
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.only(right: 16),
+
                         child: PromoCard(
                           title: index == 0
                               ? "Summer Sale 50% OFF"
@@ -144,61 +147,32 @@ class _HeroSectionState extends State<HeroSection> {
                 SizedBox(height: 10),
 
                 // DOT
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(2, (i) {
-                    final active = _page == i;
-                    return AnimatedContainer(
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      duration: const Duration(milliseconds: 200),
-                      height: 8,
-                      width: 8,
-                      decoration: BoxDecoration(
-                        color: active ? Colors.black : Colors.black26,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
+                ValueListenableBuilder<int>(
+                  valueListenable: _pageNotifier,
+                  builder: (_, page, __) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(2, (i) {
+                        final active = page == i;
+                        return AnimatedContainer(
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          duration: const Duration(milliseconds: 200),
+                          height: 8,
+                          width: 8,
+                          decoration: BoxDecoration(
+                            color: active ? Colors.black : Colors.black26,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        );
+                      }),
                     );
-                  }),
+                  },
                 ),
               ],
             ),
           ),
 
           SizedBox(height: 25),
-
-          const HomeFeatureSection(),
-          // const SizedBox(height: 25),
-          const HomeFeatureSectionReverse(),
-
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    debugPrint("VIEW EVERYTHING TAPPED");
-                    Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(builder: (_) => const ShopScreen()),
-                    );
-                  },
-                  child: const Text(
-                    'VIEW EVERYTHING',
-                    style: TextStyle(
-                      fontSize: 20,
-                      letterSpacing: 5,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(height: 1, width: 240, color: Colors.black),
-                const SizedBox(height: 20),
-                const FeatureIconsRow(),
-              ],
-            ),
-          ),
 
           Align(
             alignment: Alignment.centerLeft,
@@ -212,17 +186,11 @@ class _HeroSectionState extends State<HeroSection> {
             ),
           ),
 
-          const Padding(
-  padding: EdgeInsets.all(16),
-  child: Text("DEBUG: Recommended widget reached"),
-),
-
-
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('products')
                 .where('isAvailable', isEqualTo: true)
-                .limit(6)
+                .limit(10)
                 .snapshots(),
             builder: (context, snapshot) {
               // 1) ERROR CHECK (MOST IMPORTANT)
@@ -254,26 +222,65 @@ class _HeroSectionState extends State<HeroSection> {
               }
 
               final products = docs.map((doc) {
-                return Product.fromMap(
-                  doc.id,
-                  doc.data() as Map<String, dynamic>,
-                );
-              }).toList();
+  final data = doc.data() as Map<String, dynamic>;
+
+  debugPrint(
+    "DOC ${doc.id} desc='${data['description']}' "
+    "ship='${data['shippingPolicy']}' "
+    "ret='${data['returnPolicy']}'",
+  );
+
+  return Product.fromMap(doc.id, data);
+}).toList();
+
+              
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: products.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 0.60,
+                  childAspectRatio: 0.74,
                 ),
                 itemBuilder: (_, i) => ProductCard(product: products[i]),
               );
             },
+          ),
+
+          const HomeFeatureSection(),
+          // const SizedBox(height: 25),
+          const HomeFeatureSectionReverse(),
+
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    AppNavigation.tabIndex.value = 1; 
+                  },
+
+                  child: const Text(
+                    'VIEW EVERYTHING',
+                    style: TextStyle(
+                      fontSize: 20,
+                      letterSpacing: 5,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+                Container(height: 1, width: 240, color: Colors.black),
+                const SizedBox(height: 20),
+                const FeatureIconsRow(),
+              ],
+            ),
           ),
         ],
       ),
@@ -326,23 +333,6 @@ class CategoryChip extends StatelessWidget {
   }
 }
 
-// class PromoCarousel extends StatefulWidget {
-//   const PromoCarousel({super.key});
-
-//   @override
-//   State<PromoCarousel> createState() => _PromoCarouselState();
-// }
-
-// class _PromoCarouselState extends State<PromoCarousel> {
-//   @override
-//    Widget build(BuildContext context) {
-//     // first add controller
-
-//     //
-
-//   }
-// }
-
 class PromoCard extends StatelessWidget {
   final String title;
   final String text;
@@ -372,11 +362,22 @@ class PromoCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
                 ),
+                const SizedBox(height: 6),
                 Text(
                   text,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),

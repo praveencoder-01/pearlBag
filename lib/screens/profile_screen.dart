@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/providers/cart_provider.dart';
+import 'package:food_website/screens/address_screen.dart';
 import 'package:food_website/screens/change_password_screen.dart';
+import 'package:food_website/screens/my_orders_screen.dart';
 import 'package:provider/provider.dart';
 
-class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,12 @@ class AccountScreen extends StatelessWidget {
                     title: const Text("My Orders"),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // TODO: Navigate to My Orders screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MyOrdersScreen(),
+                        ),
+                      );
                     },
                   ),
                   const Divider(),
@@ -84,6 +91,22 @@ class AccountScreen extends StatelessWidget {
                       );
                     },
                   ),
+                  const Divider(),
+
+                  // Manage Address
+                  ListTile(
+                    leading: const Icon(Icons.location_on_outlined),
+                    title: const Text("Manage Address"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AddressScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
                   const Divider(),
 
@@ -93,7 +116,7 @@ class AccountScreen extends StatelessWidget {
                     title: const Text("Help & Support"),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // TODO: Navigate to Help & Support
+                      //  Navigate to Help & Support
                     },
                   ),
                   const Divider(height: 32),

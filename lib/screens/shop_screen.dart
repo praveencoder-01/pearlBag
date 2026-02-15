@@ -1,83 +1,81 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:food_website/data/dummy_images.dart';
-import 'package:food_website/layout/main_layout.dart';
-// import 'package:food_website/data/products.dart';
-// import 'package:food_website/widgets/product_card.dart';
+import 'package:food_website/models/product.dart';
+import 'package:food_website/widgets/product_card.dart';
 
 class ShopScreen extends StatefulWidget {
-  final String? initialCategory;
+   final String? initialCategory;
+  final String searchQuery;
 
-  const ShopScreen({super.key, this.initialCategory});
+  const ShopScreen({super.key, this.initialCategory, this.searchQuery = ""});
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
 class _ShopScreenState extends State<ShopScreen> {
-  String? selectedCategory;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedCategory = widget.initialCategory;
-  }
-
+  
   @override
   Widget build(BuildContext context) {
-    print(
-      "normal=${Navigator.of(context).canPop()} root=${Navigator.of(context, rootNavigator: true).canPop()}",
-    );
+    return Column(
+      children: [
+        /// PRODUCTS GRID (next step)
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('products')
+                .where('isAvailable', isEqualTo: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              /// ERROR
+              if (snapshot.hasError) {
+                return const Center(child: Text("Something went wrong"));
+              }
 
-    // final filteredProducts = selectedCategory == null
-    //     ? dummyProducts
-    //     : dummyProducts.where((product) {
-    //         return product.category.toLowerCase() == selectedCategory;
-    //       }).toList();
-    return MainLayout(
-      child: CustomScrollView(
-        slivers: [
-          // 🔹 TITLE
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 100, bottom: 40),
-              child: Column(
-                children: const [
-                  Text(
-                    'EVERYTHING',
-                    style: TextStyle(
-                      fontSize: 28,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // SizedBox(width: 120, child: Divider(thickness: 1)),
-                ],
-              ),
-            ),
+              /// LOADING
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              /// DATA
+              final docs = snapshot.data?.docs ?? [];
+
+              if (docs.isEmpty) {
+                return const Center(child: Text("No products found"));
+              }
+
+              var products = docs.map((doc) {
+                return Product.fromMap(
+                  doc.id,
+                  doc.data() as Map<String, dynamic>,
+                );
+              }).toList();
+
+               // ✅ FILTER BY SEARCH
+        if (widget.searchQuery.isNotEmpty) {
+          products = products
+              .where((p) => p.name.toLowerCase().contains(widget.searchQuery))
+              .toList();
+        }
+
+              return GridView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                itemCount: products.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  childAspectRatio: 0.74,
+                ),
+                itemBuilder: (_, i) => ProductCard(product: products[i]),
+              );
+            },
           ),
-
-          // 🔹 PRODUCTS GRID
-          // SliverPadding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 20),
-          //   sliver: SliverGrid(
-          //     delegate: SliverChildBuilderDelegate((context, index) {
-          //       final product = filteredProducts[index];
-
-          //       return ProductCard(product: product);
-          //     }, childCount: filteredProducts.length),
-          //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          //       crossAxisCount: 3,
-          //       crossAxisSpacing: 24,
-          //       mainAxisSpacing: 8,
-          //       childAspectRatio: 1.15,
-          //     ),
-          //   ),
-          // ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 80)),
-        ],
-      ),);
+        ),
+      ],
+    );
   }
 }
