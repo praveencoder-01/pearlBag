@@ -75,8 +75,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ],
     );
   }
-  
-    Widget infoTile({
+
+  Widget infoTile({
     required IconData icon,
     required String title,
     required String body,

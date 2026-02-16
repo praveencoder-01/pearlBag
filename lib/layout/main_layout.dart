@@ -14,16 +14,16 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   bool _isSearching = false;
 
-  List<Product> _filteredProducts = [];
+  final List<Product> _filteredProducts = [];
   final TextEditingController _searchController = TextEditingController();
 
-  void _onSearch(String value) {
-    // setState(() {
-    //   _filteredProducts = dummyProducts
-    //       .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
-    //       .toList();
-    // });
-  }
+  // void _onSearch(String value) {
+  // setState(() {
+  //   _filteredProducts = dummyProducts
+  //       .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
+  //       .toList();
+  // });
+  // }
 
   @override
   void dispose() {
@@ -33,7 +33,6 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-
     return Stack(
       children: [
         // 🔹 BACKGROUND
@@ -93,38 +92,37 @@ class _MainLayoutState extends State<MainLayout> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // 🔍 SEARCH BAR
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _searchController,
-                                  autofocus: true,
-                                  onChanged: _onSearch,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Search products...',
-                                    border: InputBorder.none,
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _searchController.clear(); // ✅ text clear
-                                    _filteredProducts
-                                        .clear(); // ✅ results clear
-                                  });
-                                },
-                                child: const Text('✕'),
-                              ),
-                            ],
-                          ),
-                        ),
-
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 12),
+                        //   decoration: BoxDecoration(
+                        //     border: Border.all(color: Colors.black),
+                        //   ),
+                        //   child: Row(
+                        //     children: [
+                        //       Expanded(
+                        //         child: TextField(
+                        //           controller: _searchController,
+                        //           autofocus: true,
+                        //           onChanged: _onSearch,
+                        //           decoration: const InputDecoration(
+                        //             hintText: 'Search products...',
+                        //             border: InputBorder.none,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       GestureDetector(
+                        //         onTap: () {
+                        //           setState(() {
+                        //             _searchController.clear(); // ✅ text clear
+                        //             _filteredProducts
+                        //                 .clear(); // ✅ results clear
+                        //           });
+                        //         },
+                        //         child: const Text('✕'),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         const SizedBox(height: 12),
 
                         if (_searchController.text.isNotEmpty)
