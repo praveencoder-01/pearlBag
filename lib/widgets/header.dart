@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
-class AppHeader extends StatelessWidget {
+class AppHeader extends StatefulWidget {
   const AppHeader({super.key});
+
+  @override
+  State<AppHeader> createState() => _AppHeaderState();
+}
+
+class _AppHeaderState extends State<AppHeader> {
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,27 +31,18 @@ class AppHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // 🔸 BRAND
-          Center(
-            child: const Text(
-              'Pearl Bags',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-          ),
 
-          const Spacer(),
+          const SizedBox(width: 18),
 
-          // 🔸 NAV ITEMS (ONLY ON DESKTOP)
+          // ✅ NAV ITEMS (desktop only)
           if (isDesktop) ...[
             _NavItem(title: 'Home', onTap: () {}),
             const SizedBox(width: 24),
             _NavItem(
               title: 'About',
-              onTap: () {
-                Navigator.pushNamed(context, '/about');
-              },
+              onTap: () => Navigator.pushNamed(context, '/about'),
             ),
-            const SizedBox(width: 32),
+            const SizedBox(width: 10),
           ],
         ],
       ),
@@ -46,7 +50,6 @@ class AppHeader extends StatelessWidget {
   }
 }
 
-/// 🔹 NAV ITEM
 class _NavItem extends StatefulWidget {
   final String title;
   final VoidCallback onTap;
@@ -85,6 +88,55 @@ class _NavItemState extends State<_NavItem> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SearchDialog extends StatefulWidget {
+  const _SearchDialog();
+
+  @override
+  State<_SearchDialog> createState() => _SearchDialogState();
+}
+
+class _SearchDialogState extends State<_SearchDialog> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Search"),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (value) {
+  final q = value.trim();
+  if (q.isEmpty) return;
+
+  // MainShell ko update karna hai:
+  // easiest: callback bhejo SiteHeader me
+},
+        decoration: const InputDecoration(
+          hintText: "Search bags...",
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _ctrl.text),
+          child: const Text("Search"),
+        ),
+      ],
     );
   }
 }

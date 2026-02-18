@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
+import 'package:food_website/providers/wishlist_provider.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
+import 'package:provider/provider.dart';
+// import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends StatefulWidget {
@@ -17,6 +21,23 @@ class _ProductCardState extends State<ProductCard>
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWishlistState();
+  }
+
+  Future<void> _loadWishlistState() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        // _isWishlisted = false;
+        // _loadingWish = false;
+      });
+      return;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +80,9 @@ class _ProductCardState extends State<ProductCard>
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(14),
                       ),
+                      
                       child: RepaintBoundary(
+                        
                         child: _buildProductImage(widget.product.imageUrl),
                       ),
                     ),
@@ -67,24 +90,42 @@ class _ProductCardState extends State<ProductCard>
                     Positioned(
                       top: 10,
                       right: 10,
-                      child: Container(
-                        height: 34,
-                        width: 34,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 8,
+                      child: Consumer<WishlistProvider>(
+                        builder: (context, wishlist, _) {
+                          final isWishlisted = wishlist.isWishlisted(
+                            widget.product.id,
+                          );
+
+                          return InkWell(
+                            onTap: () {
+                              wishlist.toggle(widget.product.id);
+                            },
+                            borderRadius: BorderRadius.circular(999),
+                            child: Container(
+                              height: 34,
+                              width: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.92),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.12),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                isWishlisted
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 18,
+                                color: isWishlisted
+                                    ? Colors.black
+                                    : Colors.black87,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.favorite_border,
-                          size: 18,
-                          color: Colors.black87,
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -106,8 +147,7 @@ class _ProductCardState extends State<ProductCard>
                           height: 1.3,
                         ),
                       ),
-                      
-                      
+
                       const SizedBox(height: 6),
                       Text(
                         '₹${widget.product.price.toStringAsFixed(0)}',
@@ -126,6 +166,7 @@ class _ProductCardState extends State<ProductCard>
       ),
     );
   }
+  
 
   Widget _buildProductImage(String url) {
     final cleanUrl = url.trim();

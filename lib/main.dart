@@ -5,9 +5,10 @@ import 'package:food_website/core/theme.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/providers/user_provider.dart';
+import 'package:food_website/providers/wishlist_provider.dart';
 import 'package:food_website/screens/cart_screen.dart';
 import 'package:food_website/screens/checkout_screen.dart';
-// import 'package:food_website/providers/product_provider.dart';
+import 'package:food_website/screens/shop_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -39,18 +40,37 @@ class MyApp extends StatelessWidget {
     ChangeNotifierProvider(create: (_) => AuthProvider()),
     ChangeNotifierProvider(create: (_) => CategoryProvider()),
     ChangeNotifierProvider(create: (_) => DrawerProvider()),
+    ChangeNotifierProvider(create: (_) => WishlistProvider()),
     // ChangeNotifierProvider(create: (_) => ProductProvider()),
   ],
   child: MaterialApp(
-    routes: {
+  debugShowCheckedModeBanner: false,
+  theme: appTheme,
+  home: const AuthWrapper(),
+
+  routes: {
     '/cart': (context) => const CartScreen(),
     '/checkout': (context) => const CheckoutScreen(),
   },
-    debugShowCheckedModeBanner: false,
-    theme: appTheme,
 
-    home: const AuthWrapper(),
-  ),
+  onGenerateRoute: (settings) {
+    if (settings.name == '/shop') {
+      final args = (settings.arguments as Map?) ?? {};
+
+      final String searchQuery = (args['searchQuery'] ?? '').toString();
+      final String? initialCategory = args['initialCategory']?.toString();
+
+      return MaterialPageRoute(
+        builder: (_) => ShopScreen(
+          searchQuery: searchQuery,
+          initialCategory: initialCategory,
+        ),
+      );
+    }
+
+    return null;
+  },
+),
 );
   }
 }

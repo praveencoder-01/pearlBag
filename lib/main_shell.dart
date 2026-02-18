@@ -1,6 +1,9 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:food_website/models/product.dart';
 import 'package:food_website/screens/cart_screen.dart';
-// ✅ Replace these imports with your real screens (if they exist)
 import 'package:food_website/screens/home_screen.dart';
 import 'package:food_website/screens/profile_screen.dart';
 import 'package:food_website/screens/shop_screen.dart';
@@ -19,8 +22,55 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  final FocusNode _homeSearchFocus = FocusNode();
+
   int _selectedIndex = 0;
   late final VoidCallback _tabListener;
+  String _shopSearchQuery = "";
+  List<Product> _suggestions = [];
+  bool _loadingSuggest = false;
+  Timer? _suggestDebounce;
+
+  Future<void> _fetchSuggestions(String text) async {
+    final q = text.trim().toLowerCase();
+    if (q.isEmpty) {
+      setState(() => _suggestions = []);
+      return;
+    }
+
+    setState(() => _loadingSuggest = true);
+
+    try {
+      // ✅ SIMPLE method: fetch a small batch and filter locally
+      // (Firestore "contains" query directly support nahi karta)
+      final snap = await FirebaseFirestore.instance
+          .collection('products')
+          .where('isAvailable', isEqualTo: true)
+          .limit(60)
+          .get();
+
+      final products = snap.docs
+          .map((d) => Product.fromMap(d.id, d.data()))
+          .toList();
+
+      final filtered = products
+          .where((p) {
+            final name = p.name.toLowerCase();
+            return name.contains(q);
+          })
+          .take(8)
+          .toList();
+
+      if (!mounted) return;
+      setState(() => _suggestions = filtered);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _suggestions = []);
+    } finally {
+      if (!mounted) return;
+      setState(() => _loadingSuggest = false);
+    }
+  }
 
   @override
   void initState() {
@@ -28,6 +78,9 @@ class _MainShellState extends State<MainShell> {
     _selectedIndex = AppNavigation.tabIndex.value;
 
     _tabListener = () {
+      debugPrint(
+        "MAINSHELL: tabIndex listener -> ${AppNavigation.tabIndex.value}",
+      );
       setState(() {
         _selectedIndex = AppNavigation.tabIndex.value;
       });
@@ -38,13 +91,16 @@ class _MainShellState extends State<MainShell> {
 
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
-  String searchQuery = "";
+  // String searchQuery = "";
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
     AppNavigation.tabIndex.removeListener(_tabListener); // 👈 IMPORTANT
     _searchController.dispose();
+    _suggestDebounce?.cancel();
+    _homeSearchFocus.dispose();
+
     super.dispose();
   }
 
@@ -53,8 +109,12 @@ class _MainShellState extends State<MainShell> {
       case 0:
         return HomeScreen();
       case 1:
+        debugPrint(
+          "MAINSHELL: building ShopScreen with query='$_shopSearchQuery'",
+        );
         return ShopScreen(
-          searchQuery: searchQuery, // ✅ yaha live value jayegi
+          key: ValueKey(_shopSearchQuery), // ✅ add this
+          searchQuery: _shopSearchQuery,
         );
       case 2:
         return CartScreen();
@@ -66,6 +126,7 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _onItemTapped(int index) {
+    debugPrint("MAINSHELL: _onItemTapped -> $index (before: $_selectedIndex)");
     // close drawer if open
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.pop(context);
@@ -75,6 +136,7 @@ class _MainShellState extends State<MainShell> {
       _isSearching = false;
       _searchController.clear();
       _selectedIndex = index;
+      if (index != 1) _shopSearchQuery = "";
     });
 
     // ✅ IMPORTANT: keep notifier in sync
@@ -87,11 +149,51 @@ class _MainShellState extends State<MainShell> {
       return SiteHeader(
         isSearching: _isSearching,
         searchController: _searchController,
+        focusNode: _homeSearchFocus,
         onSearchChanged: (value) {
           setState(() {
             _isSearching = value;
-            if (!value) _searchController.clear();
+            if (!value) {
+              _searchController.clear();
+              _suggestions = [];
+            }
           });
+
+          if (value) {
+            Future.delayed(const Duration(milliseconds: 100), () {
+              _homeSearchFocus.requestFocus();
+            });
+          }
+        },
+
+        onQueryChanged: (text) {
+          debugPrint("MAINSHELL: onQueryChanged -> '$text'");
+
+          _suggestDebounce?.cancel();
+          _suggestDebounce = Timer(const Duration(milliseconds: 250), () {
+            _fetchSuggestions(text);
+          });
+        },
+
+        onSearchSubmit: (q) {
+          debugPrint("MAINSHELL: onSearchSubmit -> '$q'");
+          final query = q.trim();
+          if (query.isEmpty) return;
+
+          setState(() {
+            _shopSearchQuery = query;
+            _isSearching = false;
+            _selectedIndex = 1;
+            _suggestions = [];
+          });
+
+          debugPrint(
+            "MAINSHELL: set shopQuery='$_shopSearchQuery', selectedIndex=$_selectedIndex",
+          );
+
+          _searchController.clear();
+          AppNavigation.tabIndex.value = 1;
+          debugPrint("MAINSHELL: tabIndex notifier set to 1");
         },
       );
     }
@@ -137,17 +239,98 @@ class _MainShellState extends State<MainShell> {
 
       body: Stack(
         children: [
+          /// 1️⃣ Normal screen (Home / Shop / Cart / Profile)
           _currentScreen(),
+
+          /// 2️⃣ WHITE SEARCH OVERLAY (THIS HIDES HOME SCREEN)
           if (_isSearching)
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
+                  FocusScope.of(context).unfocus();
                   setState(() {
                     _isSearching = false;
                     _searchController.clear();
+                    _suggestions = [];
                   });
                 },
-                child: Container(color: AppColors.surface),
+                child: Container(color: Colors.white),
+              ),
+            ),
+
+          /// 3️⃣ SUGGESTION DROPDOWN (ALWAYS TOP LAYER)
+          if (_isSearching)
+            Positioned(
+              // top: , // just below search bar
+              // left: 12,
+              // right: 12,
+              child: Material(
+                elevation: 12,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  constraints: const BoxConstraints(maxHeight: 280),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+
+                  child: _loadingSuggest
+                      ? const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : _suggestions.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text("No results found"),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _suggestions.length,
+                          itemBuilder: (context, i) {
+                            final p = _suggestions[i];
+
+                            return ListTile(
+                              /// 🔵 PRODUCT IMAGE
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  p.imageUrl,
+                                  width: 44,
+                                  height: 44,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 44,
+                                    height: 44,
+                                    color: Colors.black12,
+                                    child: const Icon(Icons.image),
+                                  ),
+                                ),
+                              ),
+
+                              /// 🔵 PRODUCT NAME
+                              title: Text(
+                                p.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              /// 🔵 CLICK → OPEN SHOP FILTERED
+                              onTap: () {
+                                setState(() {
+                                  _shopSearchQuery = p.name;
+                                  _isSearching = false;
+                                  _selectedIndex = 1;
+                                  _suggestions = [];
+                                });
+
+                                _searchController.clear();
+                                AppNavigation.tabIndex.value = 1;
+                              },
+                            );
+                          },
+                        ),
+                ),
               ),
             ),
         ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
+import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:provider/provider.dart';
 
 enum ProductInfoSection { description, shipping, returns }
@@ -25,8 +26,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   double _myRating = 0;
   bool _savingRating = false;
+  bool _isWishlisted = false;
+  bool _loadingWish = true;
 
   final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWishlistState();
+  }
+
+  Future<void> _loadWishlistState() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _isWishlisted = false;
+        _loadingWish = false;
+      });
+      return;
+    }
+
+    final exists = await WishlistService.isWishlisted(widget.product.id);
+
+    if (!mounted) return;
+    setState(() {
+      _isWishlisted = exists;
+      _loadingWish = false;
+    });
+  }
 
   @override
   void dispose() {
@@ -115,6 +143,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         )),
       ),
     );
+  }
+
+  Future<void> _toggleWishlist() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please login to use wishlist")),
+      );
+      return;
+    }
+
+    setState(() => _loadingWish = true);
+
+    try {
+      if (_isWishlisted) {
+        await WishlistService.remove(widget.product.id);
+        if (!mounted) return;
+        setState(() {
+          _isWishlisted = false;
+          _loadingWish = false;
+        });
+      } else {
+        await WishlistService.add(widget.product.id);
+        if (!mounted) return;
+        setState(() {
+          _isWishlisted = true;
+          _loadingWish = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingWish = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Wishlist failed: $e")));
+    }
   }
 
   Widget buildSpecsCard(Map<String, String> specs) {
@@ -211,8 +275,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         const SizedBox(width: 10),
         item(Icons.local_shipping_outlined, "Fasy", "Shipping"),
         const SizedBox(width: 10),
-        // item(Icons.local_shipping_outlined, "Fasy",  "Shipping"),
-        //         const SizedBox(width: 10),
         item(Icons.assignment_return_outlined, "Easy", "Returns"),
       ],
     );
@@ -467,19 +529,65 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
       return ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: imagesCount,
-            onPageChanged: (i) => setState(() => _currentImageIndex = i),
-            itemBuilder: (context, index) {
-              return Container(
-                color: Colors.grey.shade100,
-                child: _productImage(images[index]),
-              );
-            },
-          ),
+        child: Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: imagesCount,
+                onPageChanged: (i) => setState(() => _currentImageIndex = i),
+                itemBuilder: (context, index) {
+                  return Container(
+                    color: Colors.grey.shade100,
+                    child: _productImage(images[index]),
+                  );
+                },
+              ),
+            ),
+
+            // ✅ Wishlist icon bottom-right
+            Positioned(
+              right: 12,
+              bottom: 12,
+              child: InkWell(
+                onTap: _toggleWishlist,
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  height: 44,
+                  width: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.95),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: _loadingWish
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _isWishlisted
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: _isWishlisted
+                                ? Colors.black
+                                : Colors.black87,
+                            size: 22,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:food_website/screens/my_orders_screen.dart';
 import 'package:food_website/screens/shop_screen.dart';
+import 'package:food_website/screens/wishlist_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/drawer_provider.dart';
@@ -38,33 +40,19 @@ class SiteDrawerLeft extends StatelessWidget {
               icon: FontAwesomeIcons.house,
             ),
             _DrawerItem(
-              title: 'ALL PRODUCTS',
-              category: null,
-              icon: FontAwesomeIcons.bagShopping,
-            ),
-            _DrawerItem(
-              title: 'NEW ARRIVALS',
-              category: 'new',
-              icon: Icons.fiber_new_outlined,
-            ),
-            _DrawerItem(
-              title: 'BEST SELLER',
-              category: 'best',
-              icon: Icons.local_fire_department_outlined,
-            ),
-            _DrawerItem(
               title: 'WISHLIST',
               category: 'wishlist',
               icon: Icons.favorite,
             ),
             _DrawerItem(
               title: 'MY ORDER',
-              category: '',
+              category: 'orders',
               icon: Icons.fire_truck_rounded,
             ),
-            SizedBox(height: 350),
-            Divider(color: Colors.black12, thickness: 1),
-            _DrawerItem(title: 'ABOUT US', icon: Icons.circle_outlined),
+            const Spacer(),
+            const Divider(color: Colors.black12, thickness: 1),
+            const SizedBox(height: 8),
+            _DrawerItem(title: 'ABOUT US', icon: Icons.info_outline),
           ],
         ),
       ),
@@ -91,14 +79,32 @@ class _DrawerItemState extends State<_DrawerItem> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
-          Navigator.pop(context); // ✅ 1) Drawer close (MOST IMPORTANT)
-
-          // (optional) agar tum DrawerProvider use kar rahe ho
+          Navigator.pop(context); // close drawer
           context.read<DrawerProvider>().closeAll();
 
+          // ✅ If wishlist, open wishlist page
+          if (widget.category == 'wishlist') {
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).push(MaterialPageRoute(builder: (_) => const WishlistScreen()));
+            return;
+          }
+
+          // ✅ If orders, open my orders page
+          if (widget.category == 'orders') {
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).push(MaterialPageRoute(builder: (_) => const MyOrdersScreen()));
+            return;
+          }
+
+          // ✅ Otherwise go to ShopScreen
           Navigator.of(context, rootNavigator: true).push(
             MaterialPageRoute(
-              builder: (_) => ShopScreen(initialCategory: widget.category, searchQuery: "", ),
+              builder: (_) =>
+                  ShopScreen(initialCategory: widget.category, searchQuery: ""),
             ),
           );
         },

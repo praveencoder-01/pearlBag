@@ -1,61 +1,116 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/widgets/app_navigation.dart';
+import 'package:food_website/widgets/filter_bottom_sheet.dart';
 import 'package:food_website/widgets/product_card.dart';
 
 class ShopScreen extends StatefulWidget {
   final String? initialCategory;
   final String searchQuery;
 
-  const ShopScreen({super.key, this.initialCategory, this.searchQuery = ""});
+  const ShopScreen({
+    super.key,
+    this.initialCategory,
+    required this.searchQuery,
+  });
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
 class _ShopScreenState extends State<ShopScreen> {
-  final TextEditingController _searchCtrl = TextEditingController();
+  RangeValues _selectedPrice = const RangeValues(0, 1750);
+  String _selectedSort = "New Today";
+  int _selectedRating = 5;
   String _selectedCategory = "All";
+  Timer? _debounce;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = "";
 
   @override
   void initState() {
     super.initState();
+    debugPrint("SHOP: initState searchQuery='${widget.searchQuery}'");
     _selectedCategory = widget.initialCategory ?? "All";
+    _searchController.text = widget.searchQuery;
+    _searchText = widget.searchQuery.toLowerCase().trim();
+
+    _searchController.addListener(() {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 250), () {
+        if (!mounted) return;
+        setState(() {
+          _searchText = _searchController.text.toLowerCase().trim();
+        });
+      });
+    });
   }
+
+
+  @override
+void didUpdateWidget(covariant ShopScreen oldWidget) {
+  super.didUpdateWidget(oldWidget);
+    debugPrint("SHOP: didUpdateWidget old='${oldWidget.searchQuery}' new='${widget.searchQuery}'");
+
+  // ✅ jab Home se new query aaye, ShopScreen update karo
+  if (oldWidget.searchQuery != widget.searchQuery) {
+    final q = widget.searchQuery.trim();
+
+    // controller ko bhi update karo
+    _searchController.text = q;
+
+    // cursor end pe le jao (optional but feels correct)
+    _searchController.selection = TextSelection.collapsed(offset: q.length);
+
+    // _searchText update + rebuild
+    setState(() {
+      _searchText = q.toLowerCase();
+    });
+    debugPrint("SHOP: applied new query -> _searchText='$_searchText'");
+  }
+
+  // (optional) agar category bhi update hoti ho future me
+  if (oldWidget.initialCategory != widget.initialCategory &&
+      widget.initialCategory != null) {
+    setState(() {
+      _selectedCategory = widget.initialCategory!;
+    });
+  }
+}
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
+    _debounce?.cancel();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final search = _searchCtrl.text.toLowerCase().trim();
-
+    // final search = _searchText;
     Query query = FirebaseFirestore.instance
         .collection('products')
         .where('isAvailable', isEqualTo: true);
 
-    if (_selectedCategory != "All") {
-      query = query.where('category', isEqualTo: _selectedCategory);
-    }
+    // if (_selectedCategory != "All") {
+    //   query = query.where('category', isEqualTo: _selectedCategory);
+    // }
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // ✅ Top header (optional)
+            // ✅ Header
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
                   InkWell(
-                    onTap: () {
-                      AppNavigation.tabIndex.value = 0;
-                    }, // or AppNavigation.tabIndex.value = 0
+                    onTap: () => AppNavigation.tabIndex.value = 0,
                     borderRadius: BorderRadius.circular(999),
                     child: const Padding(
                       padding: EdgeInsets.all(8),
@@ -73,62 +128,79 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                     ),
                   ),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.tune)),
+                  IconButton(
+                    onPressed: () async {
+                      final result = await showModalBottomSheet<FilterResult>(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => FilterBottomSheet(
+                          initialCategory: _selectedCategory,
+                          initialPrice: _selectedPrice,
+                          initialSort: _selectedSort,
+                          initialRating: _selectedRating,
+                        ),
+                      );
+
+                      if (result == null) return;
+
+                      setState(() {
+                        _selectedCategory = result.category;
+                        _selectedPrice = result.price;
+                        _selectedSort = result.sort;
+                        _selectedRating = result.rating;
+                      });
+                    },
+                    icon: const Icon(Icons.tune),
+                  ),
                 ],
               ),
             ),
 
-            // ✅ Search bar UI (only UI; actual search logic already in your code)
+            // ✅ Search bar (CLICKABLE)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  height: 46,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF2F2F2),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, color: Colors.black45),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchCtrl,
-                          decoration: const InputDecoration(
-                            hintText: "Search...",
-                            border: InputBorder.none,
-                            isDense: true,
-                          ),
-                          onChanged: (v) {
-                            // ✅ this updates your existing search logic
-                            setState(() {});
-                          },
+              child: Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F2F2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: Colors.black45),
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Search products...",
                         ),
                       ),
-                      if (_searchCtrl.text.isNotEmpty)
-                        InkWell(
-                          onTap: () {
-                            _searchCtrl.clear();
-                            setState(() {});
-                          },
-                          child: const Icon(
-                            Icons.close,
-                            size: 18,
-                            color: Colors.black45,
-                          ),
+                    ),
+
+                    if (_searchText.isNotEmpty)
+                      InkWell(
+                        onTap: () {
+                          _searchController.clear(); // ✅ same controller clear
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Colors.black45,
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               ),
             ),
 
             const SizedBox(height: 12),
 
-            // ✅ Category chips row
+            // ✅ Category chips
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
@@ -147,11 +219,10 @@ class _ShopScreenState extends State<ShopScreen> {
 
             const SizedBox(height: 10),
 
-            // ✅ Products Grid (aligned)
+            // ✅ Products
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: query.snapshots(),
-
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Center(child: Text("Something went wrong"));
@@ -167,13 +238,31 @@ class _ShopScreenState extends State<ShopScreen> {
                       doc.data() as Map<String, dynamic>,
                     );
                   }).toList();
+                  // ✅ category filter (LOCAL)
+                  if (_selectedCategory != "All") {
+                    final selected = _selectedCategory.toLowerCase().trim();
+                    products = products.where((p) {
+                      final c = (p.category).toLowerCase().trim();
+                      return c.contains(selected) || selected.contains(c);
+                    }).toList();
+                  }
 
-                  // ✅ filter by search
-                  if (search.isNotEmpty) {
+                  // ✅ PRICE FILTER (LOCAL)
+                  products = products.where((p) {
+                    final price = (p.price).toDouble(); // ensure double
+                    return price >= _selectedPrice.start &&
+                        price <= _selectedPrice.end;
+                  }).toList();
+
+                  // ✅ search filter
+                  if (_searchText.isNotEmpty) {
                     products = products
-                        .where((p) => p.name.toLowerCase().contains(search))
+                        .where(
+                          (p) => p.name.toLowerCase().contains(_searchText),
+                        )
                         .toList();
                   }
+debugPrint("SHOP: products after filters = ${products.length}, search='$_searchText', category='$_selectedCategory'");
 
                   if (products.isEmpty) {
                     return const Center(child: Text("No products found"));
@@ -187,7 +276,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 14,
                           crossAxisSpacing: 14,
-                          childAspectRatio: 0.74, // ✅ aligned grid
+                          childAspectRatio: 0.74,
                         ),
                     itemBuilder: (_, i) => ProductCard(product: products[i]),
                   );

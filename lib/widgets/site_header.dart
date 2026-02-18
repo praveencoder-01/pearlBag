@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 
 class SiteHeader extends StatefulWidget implements PreferredSizeWidget {
   final ValueChanged<bool>? onSearchChanged;
+  final FocusNode? focusNode;
 
   final bool isSearching;
   final TextEditingController searchController;
+  final ValueChanged<String>? onSearchSubmit;
+  final ValueChanged<String>? onQueryChanged;
 
   const SiteHeader({
     super.key,
     this.onSearchChanged,
     required this.isSearching,
     required this.searchController,
+    this.onSearchSubmit,
+    this.onQueryChanged,
+    this.focusNode,
   });
 
   @override
@@ -42,8 +48,12 @@ class _SiteHeaderState extends State<SiteHeader> {
                       ),
                     )
                   : IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () => widget.onSearchChanged?.call(false),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        debugPrint("HOME: back pressed -> close search");
+                        widget.searchController.clear();
+                        widget.onSearchChanged?.call(false);
+                      },
                     ),
 
               widget.isSearching
@@ -51,6 +61,17 @@ class _SiteHeaderState extends State<SiteHeader> {
                       child: TextField(
                         controller: widget.searchController,
                         autofocus: true,
+                        textInputAction: TextInputAction.search,
+                        onChanged: (v) {
+                          debugPrint("HOME: typing -> '$v'");
+                          widget.onQueryChanged?.call(v);
+                        },
+                        onSubmitted: (v) {
+                          final q = v.trim();
+                          debugPrint("HOME: submitted raw='$v' trimmed='$q'");
+                          if (q.isEmpty) return;
+                          widget.onSearchSubmit?.call(q);
+                        },
                         decoration: InputDecoration(
                           hintText: "search",
                           border: OutlineInputBorder(
@@ -69,14 +90,21 @@ class _SiteHeaderState extends State<SiteHeader> {
               if (!widget.isSearching)
                 IconButton(
                   icon: const Icon(Icons.search),
-                  onPressed: () => widget.onSearchChanged?.call(true),
+                  onPressed: () {
+                    debugPrint("HOME: search icon pressed -> open search");
+                    widget.onSearchChanged?.call(true);
+                  },
                 ),
 
               // ❌ CLOSE SEARCH
               if (widget.isSearching)
                 IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => widget.onSearchChanged?.call(false),
+                  onPressed: () {
+                    debugPrint("HOME: close pressed -> clear + close search");
+                    widget.searchController.clear();
+                    widget.onSearchChanged?.call(false);
+                  },
                 ),
             ],
           ),

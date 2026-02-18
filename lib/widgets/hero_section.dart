@@ -222,18 +222,16 @@ class _HeroSectionState extends State<HeroSection> {
               }
 
               final products = docs.map((doc) {
-  final data = doc.data() as Map<String, dynamic>;
+                final data = doc.data() as Map<String, dynamic>;
 
-  debugPrint(
-    "DOC ${doc.id} desc='${data['description']}' "
-    "ship='${data['shippingPolicy']}' "
-    "ret='${data['returnPolicy']}'",
-  );
+                debugPrint(
+                  "DOC ${doc.id} desc='${data['description']}' "
+                  "ship='${data['shippingPolicy']}' "
+                  "ret='${data['returnPolicy']}'",
+                );
 
-  return Product.fromMap(doc.id, data);
-}).toList();
-
-              
+                return Product.fromMap(doc.id, data);
+              }).toList();
 
               return GridView.builder(
                 shrinkWrap: true,
@@ -262,7 +260,7 @@ class _HeroSectionState extends State<HeroSection> {
                 GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    AppNavigation.tabIndex.value = 1; 
+                    AppNavigation.tabIndex.value = 1;
                   },
 
                   child: const Text(
