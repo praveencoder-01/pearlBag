@@ -11,7 +11,6 @@ import 'package:food_website/theme/app_colors.dart';
 import 'package:food_website/widgets/app_navigation.dart';
 import 'package:food_website/widgets/site_drawer_left.dart';
 import 'package:food_website/widgets/site_header.dart';
-
 // If you don't have these yet, keep the placeholder screens below
 // and later replace with your real screens.
 class MainShell extends StatefulWidget {
@@ -100,6 +99,14 @@ class _MainShellState extends State<MainShell> {
     };
 
     AppNavigation.tabIndex.addListener(_tabListener);
+  //    WidgetsBinding.instance.addPostFrameCallback((_) async {
+  //   final user = FirebaseAuth.instance.currentUser;
+
+  //   if (user != null) {
+  //     await context.read<CartProvider>().loadCartFromFirestore();
+  //     await context.read<WishlistProvider>().loadWishlist();
+  //   }
+  // });
   }
 
   bool _isSearching = false;

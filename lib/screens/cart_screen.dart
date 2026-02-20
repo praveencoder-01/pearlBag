@@ -167,7 +167,7 @@ class CartScreen extends StatelessWidget {
                     // ✅ your existing card UI (white)
                     child: Container(
                       decoration: BoxDecoration(
-                         color: AppColors.card,
+                        color: AppColors.card,
 
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
@@ -318,7 +318,7 @@ class CartScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                       decoration: BoxDecoration(
- color: AppColors.card,
+                        color: AppColors.card,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -344,7 +344,7 @@ class CartScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                               color: AppColors.card,
+                              color: AppColors.card,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Column(
