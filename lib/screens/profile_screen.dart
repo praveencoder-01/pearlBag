@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/screens/address_screen.dart';
-import 'package:food_website/screens/change_password_screen.dart';
 import 'package:food_website/screens/my_orders_screen.dart';
+import 'package:food_website/screens/personal_details_screen.dart';
+import 'package:food_website/screens/settings_screen.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -13,60 +15,91 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: Container(
-        width: size.width,
-        height: size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6C63FF), Color(0xFF3F3D56)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              width: 400,
-              padding: const EdgeInsets.all(32),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          children: [
+            // PROFILE CARD
+            Container(
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+ color: AppColors.card,
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: Row(
                 children: [
-                  const Icon(
-                    Icons.account_circle_rounded,
-                    size: 80,
-                    color: Color(0xFF6C63FF),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user?.email ?? "No email",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6C63FF),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      height: 54,
+                      width: 54,
+                      color: const Color(0xFFEDEDED),
+                      child: const Icon(
+                        Icons.account_circle_rounded,
+                        size: 44,
+                        color: Colors.black54,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Fscreation",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.email ?? "No email",
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.black54,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-                  // My Orders
-                  ListTile(
-                    leading: const Icon(Icons.receipt_long),
-                    title: const Text("My Orders"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            const SizedBox(height: 18),
+
+            // MAIN MENU CARD
+            _SectionCard(
+              child: Column(
+                children: [
+                  ProfileMenuTile(
+                    icon: Icons.person_rounded,
+                    title: "Personal Details",
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PersonalDetailsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ProfileMenuTile(
+                    icon: Icons.shopping_bag,
+                    title: "My Order",
+                    onTap: () {
+                      // ✅ same logic
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -75,30 +108,18 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  const Divider(),
-
-                  // Change Password
-                  ListTile(
-                    leading: const Icon(Icons.lock),
-                    title: const Text("Change Password"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ProfileMenuTile(
+                    icon: Icons.favorite,
+                    title: "My Favourites",
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ChangePasswordScreen(),
-                        ),
-                      );
+                      // TODO: Favourites screen
                     },
                   ),
-                  const Divider(),
-
-                  // Manage Address
-                  ListTile(
-                    leading: const Icon(Icons.location_on_outlined),
-                    title: const Text("Manage Address"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ProfileMenuTile(
+                    icon: Icons.local_shipping,
+                    title: "Shipping Address",
                     onTap: () {
+                      // ✅ same logic (Manage Address)
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -107,56 +128,155 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-
-                  const Divider(),
-
-                  // Help & Support
-                  ListTile(
-                    leading: const Icon(Icons.help_outline),
-                    title: const Text("Help & Support"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ProfileMenuTile(
+                    icon: Icons.settings,
+                    title: "Settings",
                     onTap: () {
-                      //  Navigate to Help & Support
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
                     },
-                  ),
-                  const Divider(height: 32),
 
-                  // Logout Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await FirebaseAuth.instance.signOut();
-                        context.read<CartProvider>().clearCart();
-                        if (context.mounted) {
-                          Navigator.of(
-                            context,
-                          ).popUntil((route) => route.isFirst);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Logout",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+                    showDivider: false,
                   ),
                 ],
               ),
             ),
-          ),
+
+            const SizedBox(height: 16),
+
+            // SECOND MENU CARD (FAQs etc.)
+            _SectionCard(
+              child: Column(
+                children: [
+                  ProfileMenuTile(
+                    icon: Icons.help_outline,
+                    title: "FAQs",
+                    onTap: () {},
+                  ),
+                  ProfileMenuTile(
+                    icon: Icons.verified_user_rounded,
+                    title: "Privacy Policy",
+                    onTap: () {},
+                    showDivider: false,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            // LOGOUT BUTTON (✅ SAME LOGIC)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  context.read<CartProvider>().clearCart();
+                  if (context.mounted) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  "Logout",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final Widget child;
+  const _SectionCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+         color: AppColors.card,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: child,
+    );
+  }
+}
+
+class ProfileMenuTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final bool showDivider;
+
+  const ProfileMenuTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.showDivider = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  height: 38,
+                  width: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F1F1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+              ],
+            ),
+          ),
+        ),
+        if (showDivider)
+          const Padding(
+            padding: EdgeInsets.only(left: 64, right: 14),
+            // child: Divider(height: 1),
+          ),
+      ],
     );
   }
 }

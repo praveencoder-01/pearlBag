@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/screens/cart_screen.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:provider/provider.dart';
 
@@ -63,7 +64,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -85,7 +85,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         height: 48,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+ color: AppColors.card,
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(color: Colors.black12),
                         ),
@@ -150,9 +150,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
                                 ),
                                 child: Text(
                                   cart.items.length.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style:  TextStyle(
                                     fontSize: 10,
+                                    color:Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -266,7 +266,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
         height: 44,
         width: 44,
         decoration: BoxDecoration(
-          color: Colors.white,
+          // color: Colors.white,
           shape: BoxShape.circle,
           border: filled ? null : Border.all(color: Colors.black12),
         ),
@@ -294,7 +294,7 @@ class _WishCardFirebase extends StatelessWidget {
     return Container(
       height: 100,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(

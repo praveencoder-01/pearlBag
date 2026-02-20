@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand / Base
-  static const scaffold = Color.fromARGB(255, 245, 243, 243); // main background
-  static const primary = Color.fromARGB(255, 30, 31, 31); // brand accent (buttons, highlights)
+  static const scaffold = Color(0xFFF6F7F9); // main background
+  static const card = Colors.white;
+  
+  // static const cardShadow = Color(0x14000000);
+
+  static const primary = Color.fromARGB(
+    255,
+    30,
+    31,
+    31,
+  ); // brand accent (buttons, highlights)
   static const secondary = Color(0xFFEAECC6);
 
   // Text

@@ -80,7 +80,7 @@ class _MainLayoutState extends State<MainLayout> {
                 right: 0,
                 child: Material(
                   elevation: 8,
-                  color: Colors.white,
+
                   child: Container(
                     padding: const EdgeInsets.only(
                       top: 15,
@@ -91,38 +91,6 @@ class _MainLayoutState extends State<MainLayout> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 🔍 SEARCH BAR
-                        // Container(
-                        //   padding: const EdgeInsets.symmetric(horizontal: 12),
-                        //   decoration: BoxDecoration(
-                        //     border: Border.all(color: Colors.black),
-                        //   ),
-                        //   child: Row(
-                        //     children: [
-                        //       Expanded(
-                        //         child: TextField(
-                        //           controller: _searchController,
-                        //           autofocus: true,
-                        //           onChanged: _onSearch,
-                        //           decoration: const InputDecoration(
-                        //             hintText: 'Search products...',
-                        //             border: InputBorder.none,
-                        //           ),
-                        //         ),
-                        //       ),
-                        //       GestureDetector(
-                        //         onTap: () {
-                        //           setState(() {
-                        //             _searchController.clear(); // ✅ text clear
-                        //             _filteredProducts
-                        //                 .clear(); // ✅ results clear
-                        //           });
-                        //         },
-                        //         child: const Text('✕'),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
                         const SizedBox(height: 12),
 
                         if (_searchController.text.isNotEmpty)

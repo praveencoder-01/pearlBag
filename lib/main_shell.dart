@@ -30,6 +30,7 @@ class _MainShellState extends State<MainShell> {
   List<Product> _suggestions = [];
   bool _loadingSuggest = false;
   Timer? _suggestDebounce;
+  final List<String> _searchHistory = [];
 
   Future<void> _fetchSuggestions(String text) async {
     final q = text.trim().toLowerCase();
@@ -72,15 +73,27 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
+  void _addToHistory(String q) {
+    final query = q.trim();
+    if (query.isEmpty) return;
+
+    setState(() {
+      _searchHistory.removeWhere((e) => e.toLowerCase() == query.toLowerCase());
+      _searchHistory.insert(0, query);
+      if (_searchHistory.length > 10) _searchHistory.removeLast(); // max 10
+    });
+  }
+
+  void _clearHistory() {
+    setState(() => _searchHistory.clear());
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = AppNavigation.tabIndex.value;
 
     _tabListener = () {
-      debugPrint(
-        "MAINSHELL: tabIndex listener -> ${AppNavigation.tabIndex.value}",
-      );
       setState(() {
         _selectedIndex = AppNavigation.tabIndex.value;
       });
@@ -109,9 +122,6 @@ class _MainShellState extends State<MainShell> {
       case 0:
         return HomeScreen();
       case 1:
-        debugPrint(
-          "MAINSHELL: building ShopScreen with query='$_shopSearchQuery'",
-        );
         return ShopScreen(
           key: ValueKey(_shopSearchQuery), // ✅ add this
           searchQuery: _shopSearchQuery,
@@ -126,7 +136,6 @@ class _MainShellState extends State<MainShell> {
   }
 
   void _onItemTapped(int index) {
-    debugPrint("MAINSHELL: _onItemTapped -> $index (before: $_selectedIndex)");
     // close drawer if open
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.pop(context);
@@ -165,19 +174,16 @@ class _MainShellState extends State<MainShell> {
             });
           }
         },
-
         onQueryChanged: (text) {
-          debugPrint("MAINSHELL: onQueryChanged -> '$text'");
-
           _suggestDebounce?.cancel();
           _suggestDebounce = Timer(const Duration(milliseconds: 250), () {
             _fetchSuggestions(text);
           });
         },
-
         onSearchSubmit: (q) {
-          debugPrint("MAINSHELL: onSearchSubmit -> '$q'");
           final query = q.trim();
+          _addToHistory(q);
+
           if (query.isEmpty) return;
 
           setState(() {
@@ -187,18 +193,13 @@ class _MainShellState extends State<MainShell> {
             _suggestions = [];
           });
 
-          debugPrint(
-            "MAINSHELL: set shopQuery='$_shopSearchQuery', selectedIndex=$_selectedIndex",
-          );
-
           _searchController.clear();
           AppNavigation.tabIndex.value = 1;
-          debugPrint("MAINSHELL: tabIndex notifier set to 1");
         },
       );
     }
 
-    // ✅ SHOP -> remove top bar
+    // SHOP -> remove top bar
     if (_selectedIndex == 1) {
       return null;
     }
@@ -206,169 +207,263 @@ class _MainShellState extends State<MainShell> {
     // CART
     if (_selectedIndex == 2) {
       return AppBar(
-        title: const Text("Cart"),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.black,
+            size: 18,
+          ),
+          onPressed: () {
+            setState(() => _selectedIndex = 0);
+            AppNavigation.tabIndex.value = 0;
+          },
+        ),
+        title: const Text("Cart", style: TextStyle(color: Colors.black)),
       );
     }
 
-    // ACCOUNT
-    return AppBar(
-      title: const Text("Account"),
-      centerTitle: true,
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-      elevation: 0,
+    // PROFILE
+    if (_selectedIndex == 3) {
+      return AppBar(
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.black,
+            size: 18,
+          ),
+          onPressed: () {
+            setState(() => _selectedIndex = 0);
+            AppNavigation.tabIndex.value = 0;
+          },
+        ),
+        title: const Text(
+          "Account",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        ),
+      );
+    }
+
+    // ✅ IMPORTANT fallback (prevents the error)
+    return null;
+  }
+
+  Widget _buildHistoryList() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Recent searches",
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              TextButton(onPressed: _clearHistory, child: const Text("Clear")),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _searchHistory.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, i) {
+            final q = _searchHistory[i];
+            return ListTile(
+              dense: true,
+              leading: const Icon(Icons.history, size: 20),
+              title: Text(q, maxLines: 1, overflow: TextOverflow.ellipsis),
+              onTap: () {
+                // history item pe click -> search run
+                _searchController.text = q;
+                _searchController.selection = TextSelection.collapsed(
+                  offset: q.length,
+                );
+
+                _addToHistory(q);
+
+                setState(() {
+                  _shopSearchQuery = q;
+                  _isSearching = false;
+                  _selectedIndex = 1;
+                  _suggestions = [];
+                });
+
+                _searchController.clear();
+                AppNavigation.tabIndex.value = 1;
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      drawerEnableOpenDragGesture: false, // ✅ ADD THIS
-      endDrawerEnableOpenDragGesture: false,
-      drawerEdgeDragWidth: 0,
-      drawer: _isSearching ? null : SiteDrawerLeft(),
-      appBar: _buildAppBar(),
+    final bool isHome = _selectedIndex == 0;
+    return PopScope(
+      canPop: isHome, // ✅ only allow exit when on Home
+      onPopInvoked: (didPop) {
+        if (!isHome) {
+          setState(() => _selectedIndex = 0);
+          AppNavigation.tabIndex.value = 0; // ✅ keep notifier in sync
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawerEnableOpenDragGesture: isHome && !_isSearching,
+        endDrawerEnableOpenDragGesture: false,
+        drawerEdgeDragWidth: isHome ? 20 : 0, // 0 => no swipe drawer
+        drawer: (isHome && !_isSearching) ? SiteDrawerLeft() : null,
+        appBar: _buildAppBar(),
 
-      extendBody: true, // ⭐ VERY IMPORTANT
-      backgroundColor: AppColors.scaffold,
+        extendBody: true, // ⭐ VERY IMPORTANT
+        backgroundColor: AppColors.scaffold,
 
-      body: Stack(
-        children: [
-          /// 1️⃣ Normal screen (Home / Shop / Cart / Profile)
-          _currentScreen(),
+        body: Stack(
+          children: [
+            /// 1️⃣ Normal screen (Home / Shop / Cart / Profile)
+            _currentScreen(),
 
-          /// 2️⃣ WHITE SEARCH OVERLAY (THIS HIDES HOME SCREEN)
-          if (_isSearching)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                  setState(() {
-                    _isSearching = false;
-                    _searchController.clear();
-                    _suggestions = [];
-                  });
-                },
-                child: Container(color: Colors.white),
+            /// 2️⃣ WHITE SEARCH OVERLAY (THIS HIDES HOME SCREEN)
+            if (_isSearching)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    setState(() {
+                      _isSearching = false;
+                      _searchController.clear();
+                      _suggestions = [];
+                    });
+                  },
+                  child: Container(color: Colors.white),
+                ),
               ),
-            ),
 
-          /// 3️⃣ SUGGESTION DROPDOWN (ALWAYS TOP LAYER)
-          if (_isSearching)
-            Positioned(
-              // top: , // just below search bar
-              // left: 12,
-              // right: 12,
-              child: Material(
-                elevation: 12,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  constraints: const BoxConstraints(maxHeight: 280),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+            /// 3️⃣ SUGGESTION DROPDOWN (ALWAYS TOP LAYER)
+            if (_isSearching)
+              Positioned(
+                // top: , // just below search bar
+                // left: 12,
+                // right: 12,
+                child: Material(
+                  elevation: 12,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    decoration: BoxDecoration(
 
-                  child: _loadingSuggest
-                      ? const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      : _suggestions.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text("No results found"),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _suggestions.length,
-                          itemBuilder: (context, i) {
-                            final p = _suggestions[i];
+                      borderRadius: BorderRadius.circular(16),
+                    ),
 
-                            return ListTile(
-                              /// 🔵 PRODUCT IMAGE
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  p.imageUrl,
-                                  width: 44,
-                                  height: 44,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
+                    child: _loadingSuggest
+                        ? const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : _suggestions.isEmpty
+                        ? _buildHistoryList()
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _suggestions.length,
+                            itemBuilder: (context, i) {
+                              final p = _suggestions[i];
+
+                              return ListTile(
+                                /// 🔵 PRODUCT IMAGE
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    p.imageUrl,
                                     width: 44,
                                     height: 44,
-                                    color: Colors.black12,
-                                    child: const Icon(Icons.image),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 44,
+                                      height: 44,
+                                      color: Colors.black12,
+                                      child: const Icon(Icons.image),
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              /// 🔵 PRODUCT NAME
-                              title: Text(
-                                p.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                                /// 🔵 PRODUCT NAME
+                                title: Text(
+                                  p.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
 
-                              /// 🔵 CLICK → OPEN SHOP FILTERED
-                              onTap: () {
-                                setState(() {
-                                  _shopSearchQuery = p.name;
-                                  _isSearching = false;
-                                  _selectedIndex = 1;
-                                  _suggestions = [];
-                                });
+                                /// 🔵 CLICK → OPEN SHOP FILTERED
+                                onTap: () {
+                                  _addToHistory(p.name);
 
-                                _searchController.clear();
-                                AppNavigation.tabIndex.value = 1;
-                              },
-                            );
-                          },
-                        ),
+                                  setState(() {
+                                    _shopSearchQuery = p.name;
+                                    _isSearching = false;
+                                    _selectedIndex = 1;
+                                    _suggestions = [];
+                                  });
+
+                                  _searchController.clear();
+                                  AppNavigation.tabIndex.value = 1;
+                                },
+                              );
+                            },
+                          ),
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
 
-      bottomNavigationBar: IgnorePointer(
-        ignoring: _isSearching,
-        child: Opacity(
-          opacity: _isSearching ? 0 : 1,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(40),
-            child: NavigationBar(
-              height: 56,
-              // backgroundColor: const Color.fromARGB(255, 255, 0, 0),
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onItemTapped,
-              destinations: const <NavigationDestination>[
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: "Home",
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.store_outlined),
-                  selectedIcon: Icon(Icons.store),
-                  label: "Shop",
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.shopping_bag_outlined),
-                  selectedIcon: Icon(Icons.shopping_bag),
-                  label: "Cart",
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.account_circle_outlined),
-                  selectedIcon: Icon(Icons.account_circle_rounded),
-                  label: "Profile",
-                ),
-              ],
+        bottomNavigationBar: IgnorePointer(
+          ignoring: _isSearching,
+          child: Opacity(
+            opacity: _isSearching ? 0 : 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(40),
+              child: NavigationBar(
+                height: 56,
+                // backgroundColor: const Color.fromARGB(255, 255, 0, 0),
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _onItemTapped,
+                destinations: const <NavigationDestination>[
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: "Home",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.store_outlined),
+                    selectedIcon: Icon(Icons.store),
+                    label: "Shop",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.shopping_bag_outlined),
+                    selectedIcon: Icon(Icons.shopping_bag),
+                    label: "Cart",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.account_circle_outlined),
+                    selectedIcon: Icon(Icons.account_circle_rounded),
+                    label: "Profile",
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -376,84 +471,3 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-
-// class ShopHeader extends StatelessWidget implements PreferredSizeWidget {
-//   final TextEditingController controller;
-//   final VoidCallback onFilterTap;
-//   final ValueChanged<String> onSearchChanged;
-//   final VoidCallback onBack;
-
-//   const ShopHeader({
-//     super.key,
-//     required this.controller,
-//     required this.onFilterTap,
-//     required this.onSearchChanged,
-//     required this.onBack,
-//   });
-
-//   @override
-//   Size get preferredSize => const Size.fromHeight(80);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Material(
-//       child: SafeArea(
-//         bottom: false,
-//         child: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-//           child: Row(
-//             children: [
-//               // ✅ MENU (drawer)
-//               IconButton(
-//                 icon: const Icon(Icons.arrow_back_ios_new),
-//                 onPressed: onBack,
-//               ),
-
-//               const SizedBox(width: 8),
-
-              // ✅ SEARCH FIELD
-              // Expanded(
-              //   child: SizedBox(
-              //     height: 46,
-              //     child: TextField(
-              //       controller: controller,
-              //       onChanged: onSearchChanged,
-              //       decoration: InputDecoration(
-              //         hintText: "Search products...",
-              //         prefixIcon: const Icon(Icons.search),
-              //         filled: true,
-              //         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              //         border: OutlineInputBorder(
-              //           borderRadius: BorderRadius.circular(14),
-              //         ),
-              //         focusedBorder: OutlineInputBorder(
-              //           borderRadius: BorderRadius.circular(14),
-              //           borderSide: const BorderSide(width: 1),
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-
-              // const SizedBox(width: 8),
-
-              // // ✅ FILTER ICON
-              // SizedBox(
-              //   height: 46,
-              //   width: 46,
-              //   child: Material(
-              //     borderRadius: BorderRadius.circular(14),
-              //     child: InkWell(
-              //       borderRadius: BorderRadius.circular(14),
-              //       onTap: onFilterTap,
-              //       child: const Icon(Icons.tune),
-              //     ),
-              //   ),
-              // ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

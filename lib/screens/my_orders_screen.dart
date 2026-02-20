@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
+import 'package:food_website/theme/app_colors.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -152,7 +153,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                         margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+ color: AppColors.card,
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: const [
                             BoxShadow(

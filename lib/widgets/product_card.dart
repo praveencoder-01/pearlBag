@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/wishlist_provider.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 // import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -59,11 +60,11 @@ class _ProductCardState extends State<ProductCard>
           },
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withOpacity(0.06),
                   blurRadius: 14,
                   offset: const Offset(0, 6),
                 ),
@@ -80,9 +81,8 @@ class _ProductCardState extends State<ProductCard>
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(14),
                       ),
-                      
+
                       child: RepaintBoundary(
-                        
                         child: _buildProductImage(widget.product.imageUrl),
                       ),
                     ),
@@ -166,7 +166,6 @@ class _ProductCardState extends State<ProductCard>
       ),
     );
   }
-  
 
   Widget _buildProductImage(String url) {
     final cleanUrl = url.trim();

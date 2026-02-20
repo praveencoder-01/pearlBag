@@ -61,7 +61,7 @@ void login() async {
               width: 400, // fixed width for the box
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Colors.white,
+
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(

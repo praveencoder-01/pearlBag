@@ -4,32 +4,33 @@ import 'package:food_website/theme/app_colors.dart';
 final ThemeData appTheme = ThemeData(
   useMaterial3: true,
 
+  // ⭐ MAIN APP BACKGROUND
   scaffoldBackgroundColor: AppColors.scaffold,
 
-  colorScheme: ColorScheme(
-    brightness: Brightness.light,
+  // ⭐ Important (fixes white cards & pages)
+  canvasColor: AppColors.scaffold,
 
+  // ⭐ fixes bottom sheets, dialogs, menus
+  dialogBackgroundColor: AppColors.surface,
+
+  colorScheme: ColorScheme.light(
     primary: AppColors.primary,
-    onPrimary: Colors.white,
-
     secondary: AppColors.secondary,
-    onSecondary: AppColors.textPrimary,
-
     surface: AppColors.surface,
-    onSurface: AppColors.textPrimary,
-
     error: AppColors.error,
-    onError: Colors.white,
-  ),
-
-  navigationBarTheme: const NavigationBarThemeData(
-    backgroundColor: Color.fromARGB(255, 250, 250, 250),
-    indicatorColor: Colors.transparent,
-    elevation: 0,
+    onPrimary: Colors.white,
+    onSurface: AppColors.textPrimary,
   ),
 
   appBarTheme: const AppBarTheme(
     backgroundColor: AppColors.surface,
+    elevation: 0,
+    foregroundColor: AppColors.textPrimary,
+  ),
+
+  navigationBarTheme: const NavigationBarThemeData(
+    backgroundColor: AppColors.surface,
+    indicatorColor: Colors.transparent,
     elevation: 0,
   ),
 

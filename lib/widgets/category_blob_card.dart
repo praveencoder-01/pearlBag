@@ -47,9 +47,9 @@ class CategoryBlobCard extends StatelessWidget {
             bottom: 30,
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
-                color: Colors.white,
+
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1,
               ),

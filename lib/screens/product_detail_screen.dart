@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:provider/provider.dart';
 
@@ -112,7 +113,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 245, 245, 245),
+         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Theme(
@@ -215,7 +216,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 245, 245, 245),
+         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -241,7 +242,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 245, 245, 245),
+             color: AppColors.card,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
@@ -285,7 +286,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 245, 245, 245),
+         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color.fromARGB(255, 230, 230, 230)),
       ),
@@ -499,9 +500,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("DESC = ${widget.product.description}");
-    debugPrint("SHIP = ${widget.product.shippingPolicy}");
-    debugPrint("RET  = ${widget.product.returnPolicy}");
 
     final images = widget.product.images
         .map((e) => e.replaceAll('\n', '').trim())
@@ -593,11 +591,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
 
       // ---------------- APPBAR ----------------
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
         actions: [
@@ -773,8 +769,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Container(
           height: 86,
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+ color: AppColors.card,
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,

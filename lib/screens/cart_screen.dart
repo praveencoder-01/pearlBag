@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/cart_provider.dart';
@@ -121,7 +122,6 @@ class CartScreen extends StatelessWidget {
     final cart = context.watch<CartProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(title: const Text('My Cart')),
 
       // ✅ BODY
@@ -167,7 +167,8 @@ class CartScreen extends StatelessWidget {
                     // ✅ your existing card UI (white)
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                         color: AppColors.card,
+
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
@@ -308,7 +309,7 @@ class CartScreen extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(bottom: bottomInset),
                 child: Container(
-                  color: Colors.transparent,
+                  color: AppColors.card,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(26),
@@ -316,8 +317,8 @@ class CartScreen extends StatelessWidget {
                     ),
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+ color: AppColors.card,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -343,7 +344,7 @@ class CartScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 245, 245, 245),
+                               color: AppColors.card,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Column(

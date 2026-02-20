@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:food_website/widgets/app_navigation.dart';
 import 'package:food_website/widgets/feature_icons_row.dart';
 import 'package:food_website/widgets/home_feature_section.dart';
@@ -224,12 +225,6 @@ class _HeroSectionState extends State<HeroSection> {
               final products = docs.map((doc) {
                 final data = doc.data() as Map<String, dynamic>;
 
-                debugPrint(
-                  "DOC ${doc.id} desc='${data['description']}' "
-                  "ship='${data['shippingPolicy']}' "
-                  "ret='${data['returnPolicy']}'",
-                );
-
                 return Product.fromMap(doc.id, data);
               }).toList();
 
@@ -299,7 +294,7 @@ class CategoryChip extends StatelessWidget {
           width: 110,
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.card,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(

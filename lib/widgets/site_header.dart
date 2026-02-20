@@ -50,7 +50,6 @@ class _SiteHeaderState extends State<SiteHeader> {
                   : IconButton(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () {
-                        debugPrint("HOME: back pressed -> close search");
                         widget.searchController.clear();
                         widget.onSearchChanged?.call(false);
                       },
@@ -63,12 +62,10 @@ class _SiteHeaderState extends State<SiteHeader> {
                         autofocus: true,
                         textInputAction: TextInputAction.search,
                         onChanged: (v) {
-                          debugPrint("HOME: typing -> '$v'");
                           widget.onQueryChanged?.call(v);
                         },
                         onSubmitted: (v) {
                           final q = v.trim();
-                          debugPrint("HOME: submitted raw='$v' trimmed='$q'");
                           if (q.isEmpty) return;
                           widget.onSearchSubmit?.call(q);
                         },
@@ -91,7 +88,6 @@ class _SiteHeaderState extends State<SiteHeader> {
                 IconButton(
                   icon: const Icon(Icons.search),
                   onPressed: () {
-                    debugPrint("HOME: search icon pressed -> open search");
                     widget.onSearchChanged?.call(true);
                   },
                 ),
@@ -101,7 +97,6 @@ class _SiteHeaderState extends State<SiteHeader> {
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () {
-                    debugPrint("HOME: close pressed -> clear + close search");
                     widget.searchController.clear();
                     widget.onSearchChanged?.call(false);
                   },

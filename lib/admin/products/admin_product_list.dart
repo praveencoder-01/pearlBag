@@ -32,7 +32,6 @@ class AdminProductListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FA),
 
       appBar: AppBar(
         elevation: 0,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_website/theme/app_colors.dart';
 
 class FilterResult {
   final String category;
@@ -68,8 +69,8 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     return SafeArea(
       child: Container(
         height: MediaQuery.of(context).size.height * 0.88,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+ color: AppColors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
         ),
         child: Padding(

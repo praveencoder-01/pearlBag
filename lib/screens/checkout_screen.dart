@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/providers/user_provider.dart';
+import 'package:food_website/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/cart_provider.dart';
@@ -48,7 +49,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+ color: AppColors.card,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
@@ -282,8 +283,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 borderRadius: BorderRadius.circular(28),
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration:  BoxDecoration(
+ color: AppColors.card,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
@@ -384,7 +385,7 @@ class _CheckoutItemCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+ color: AppColors.card,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(

@@ -24,7 +24,6 @@ class _AppHeaderState extends State<AppHeader> {
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10),
         ],

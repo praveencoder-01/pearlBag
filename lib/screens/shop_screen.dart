@@ -33,7 +33,6 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint("SHOP: initState searchQuery='${widget.searchQuery}'");
     _selectedCategory = widget.initialCategory ?? "All";
     _searchController.text = widget.searchQuery;
     _searchText = widget.searchQuery.toLowerCase().trim();
@@ -53,7 +52,6 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
 void didUpdateWidget(covariant ShopScreen oldWidget) {
   super.didUpdateWidget(oldWidget);
-    debugPrint("SHOP: didUpdateWidget old='${oldWidget.searchQuery}' new='${widget.searchQuery}'");
 
   // ✅ jab Home se new query aaye, ShopScreen update karo
   if (oldWidget.searchQuery != widget.searchQuery) {
@@ -69,7 +67,6 @@ void didUpdateWidget(covariant ShopScreen oldWidget) {
     setState(() {
       _searchText = q.toLowerCase();
     });
-    debugPrint("SHOP: applied new query -> _searchText='$_searchText'");
   }
 
   // (optional) agar category bhi update hoti ho future me
@@ -100,7 +97,6 @@ void didUpdateWidget(covariant ShopScreen oldWidget) {
     // }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -262,7 +258,6 @@ void didUpdateWidget(covariant ShopScreen oldWidget) {
                         )
                         .toList();
                   }
-debugPrint("SHOP: products after filters = ${products.length}, search='$_searchText', category='$_selectedCategory'");
 
                   if (products.isEmpty) {
                     return const Center(child: Text("No products found"));
