@@ -5,6 +5,7 @@ import 'package:food_website/admin/admin_dashboard.dart';
 import 'package:food_website/auth/auth_service.dart';
 import 'package:food_website/screens/home_screen.dart';
 import 'package:food_website/screens/signup_screen.dart';
+import 'package:food_website/theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,166 +19,203 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
+  final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  bool _obscure = true;
 
-  // ✅ Login function
-void login() async {
-  setState(() => isLoading = true);
-
-  try {
-    await _authService.signIn(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
-    // ❌ NO NAVIGATION HERE
-  } catch (e) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(e.toString())));
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
-  setState(() => isLoading = false);
-}
+  // ✅ Login function (logic same, just connects to your handleLogin)
+  void login() async {
+    if (!_formKey.currentState!.validate()) return;
 
+    setState(() => isLoading = true);
 
+    try {
+      await _authService.signIn(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await handleLogin(user); // ✅ uses your existing logic
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    // final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Container(
-        width: size.width,
-        height: size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6C63FF), Color(0xFF3F3D56)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
+      backgroundColor: AppColors.scaffold,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
             child: Container(
-              width: 400, // fixed width for the box
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-
-                borderRadius: BorderRadius.circular(16),
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
                   ),
                 ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.food_bank_rounded,
-                    size: 80,
-                    color: Color(0xFF6C63FF),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Welcome Back",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6C63FF),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // LOGO / TITLE
+                    const Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 70,
+                      color: AppColors.primary,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Login to your account",
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
 
-                  // Email TextField
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      hintText: "Email",
-                      prefixIcon: const Icon(Icons.email),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 18),
+
+                    const Text(
+                      "Welcome Back",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
                     ),
-                  ),
-                  const SizedBox(height: 16),
 
-                  // Password TextField
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      hintText: "Password",
-                      prefixIcon: const Icon(Icons.lock),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 6),
+
+                    const Text(
+                      "Login to continue shopping",
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textSecondary,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
                     ),
-                  ),
-                  const SizedBox(height: 24),
 
-                  // Login Button
-                  isLoading
-                      ? const CircularProgressIndicator()
-                      : SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6C63FF),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 28),
+
+                    // EMAIL
+                    _buildField(
+                      controller: emailController,
+                      hint: "Email Address",
+                      icon: Icons.email_outlined,
+                      validator: (v) {
+                        final value = (v ?? "").trim();
+                        if (value.isEmpty) return "Email required";
+                        if (!value.contains("@")) return "Enter valid email";
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // PASSWORD
+                    _buildField(
+                      controller: passwordController,
+                      hint: "Password",
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                      obscureText: _obscure,
+                      suffix: IconButton(
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      validator: (v) {
+                        final value = (v ?? "").trim();
+                        if (value.isEmpty) return "Password required";
+                        if (value.length < 6) return "Minimum 6 characters";
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 26),
+
+                    // LOGIN BUTTON
+                    isLoading
+                        ? const CircularProgressIndicator(
+                            color: AppColors.primary,
+                          )
+                        : SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
                               ),
-                            ),
-                            child: const Text(
-                              "Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              child: const Text(
+                                "Login",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                  const SizedBox(height: 16),
 
-                  // Sign Up link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Don't have an account? "),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignupScreen(),
+                    const SizedBox(height: 18),
+
+                    // SIGNUP
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account? ",
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Sign Up",
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign Up",
-                          style: TextStyle(
-                            color: Color(0xFF6C63FF),
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -186,32 +224,61 @@ void login() async {
     );
   }
 
-  // ✅ Check if user is admin or normal user
-Future<void> handleLogin(User user) async {
+  Widget _buildField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    bool obscureText = false,
+    Widget? suffix,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword ? obscureText : false,
+      validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: AppColors.textDisabled),
+        prefixIcon: Icon(icon, color: AppColors.textSecondary),
+        suffixIcon: suffix,
+        filled: true,
+        fillColor: AppColors.surfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+        ),
+      ),
+    );
+  }
 
-  final adminDoc = await FirebaseFirestore.instance
-      .collection('admin')  
-      .doc(user.uid)
-      .get();
+  // ✅ Check if user is admin or normal user (your logic unchanged)
+  Future<void> handleLogin(User user) async {
+    final adminDoc = await FirebaseFirestore.instance
+        .collection('admin')
+        .doc(user.uid)
+        .get();
 
-
-  if (!mounted) return;
-
-  // 🔥 WEB-SAFE NAVIGATION
-  WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted) return;
 
-    if (adminDoc.exists) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => AdminDashboard()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-    }
-  });
-}
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
 
-
+      if (adminDoc.exists) {
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => AdminDashboard()));
+      } else {
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
+      }
+    });
+  }
 }
