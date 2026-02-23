@@ -70,7 +70,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.88,
         decoration: BoxDecoration(
- color: AppColors.card,
+          color: AppColors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
         ),
         child: Padding(
@@ -78,17 +78,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top row (Back only)
-              Row(
-                children: [
-                  _circleIconButton(
-                    icon: Icons.arrow_back,
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                ],
-              ),
-
               const SizedBox(height: 18),
               _title("Categories"),
               const SizedBox(height: 10),
@@ -227,25 +216,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     t,
     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
   );
-
-  Widget _circleIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: const BoxDecoration(
-          color: Colors.black,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: Colors.white, size: 20),
-      ),
-    );
-  }
 
   Widget _chip({
     required String text,

@@ -8,6 +8,8 @@ import 'package:food_website/providers/user_provider.dart';
 import 'package:food_website/providers/wishlist_provider.dart';
 import 'package:food_website/screens/cart_screen.dart';
 import 'package:food_website/screens/checkout_screen.dart';
+import 'package:food_website/screens/faq_screen.dart';
+import 'package:food_website/screens/privacy_policy_screen.dart';
 import 'package:food_website/screens/shop_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -49,8 +51,10 @@ class MyApp extends StatelessWidget {
   home: const AuthWrapper(),
 
   routes: {
-    '/cart': (context) => const CartScreen(),
+    '/cart': (context) => const CartScreen(showAppBar: true,),
     '/checkout': (context) => const CheckoutScreen(),
+    '/faqs': (_) => const FaqsScreen(),
+    '/privacy': (_) => const PrivacyPolicyScreen(),
   },
 
   onGenerateRoute: (settings) {

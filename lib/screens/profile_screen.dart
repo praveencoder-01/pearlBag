@@ -5,6 +5,7 @@ import 'package:food_website/screens/address_screen.dart';
 import 'package:food_website/screens/my_orders_screen.dart';
 import 'package:food_website/screens/personal_details_screen.dart';
 import 'package:food_website/screens/settings_screen.dart';
+import 'package:food_website/screens/wishlist_screen.dart';
 import 'package:food_website/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 
@@ -112,7 +113,12 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.favorite,
                     title: "My Favourites",
                     onTap: () {
-                      // TODO: Favourites screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WishlistScreen(),
+                        ),
+                      );
                     },
                   ),
                   ProfileMenuTile(
@@ -155,12 +161,12 @@ class ProfileScreen extends StatelessWidget {
                   ProfileMenuTile(
                     icon: Icons.help_outline,
                     title: "FAQs",
-                    onTap: () {},
+                    onTap: () {Navigator.pushNamed(context, "/faqs");},
                   ),
                   ProfileMenuTile(
                     icon: Icons.verified_user_rounded,
                     title: "Privacy Policy",
-                    onTap: () {},
+                    onTap: () {Navigator.pushNamed(context, '/privacy');},
                     showDivider: false,
                   ),
                 ],

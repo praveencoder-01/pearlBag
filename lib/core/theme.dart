@@ -10,9 +10,6 @@ final ThemeData appTheme = ThemeData(
   // ⭐ Important (fixes white cards & pages)
   canvasColor: AppColors.scaffold,
 
-  // ⭐ fixes bottom sheets, dialogs, menus
-  dialogBackgroundColor: AppColors.surface,
-
   colorScheme: ColorScheme.light(
     primary: AppColors.primary,
     secondary: AppColors.secondary,
@@ -24,8 +21,11 @@ final ThemeData appTheme = ThemeData(
 
   appBarTheme: const AppBarTheme(
     backgroundColor: AppColors.surface,
-    elevation: 0,
     foregroundColor: AppColors.textPrimary,
+
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
   ),
 
   navigationBarTheme: const NavigationBarThemeData(
@@ -35,4 +35,5 @@ final ThemeData appTheme = ThemeData(
   ),
 
   fontFamily: 'Inter',
+  dialogTheme: DialogThemeData(backgroundColor: AppColors.surface),
 );

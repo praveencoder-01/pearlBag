@@ -14,43 +14,46 @@ class SiteDrawerLeft extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 15),
-          Center(
-            child: Text(
-              'Pearl bags',
-              style: TextStyle(
-                fontSize: 20,
-                letterSpacing: 3.0,
-                fontWeight: FontWeight.w800,
-                color: Colors.black, //  force color
-                decoration: TextDecoration.none,
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 15),
+            Center(
+              child: Text(
+                'Pearl bags',
+                style: TextStyle(
+                  fontSize: 20,
+                  letterSpacing: 3.0,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black, //  force color
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
-          ),
-          SizedBox(height: 15),
-          _DrawerItem(
-            title: 'HOME',
-            category: '',
-            icon: FontAwesomeIcons.house,
-          ),
-          _DrawerItem(
-            title: 'WISHLIST',
-            category: 'wishlist',
-            icon: Icons.favorite,
-          ),
-          _DrawerItem(
-            title: 'MY ORDER',
-            category: 'orders',
-            icon: Icons.fire_truck_rounded,
-          ),
-          const Spacer(),
-          const Divider(color: Colors.black12, thickness: 1),
-          const SizedBox(height: 8),
-          _DrawerItem(title: 'ABOUT US', icon: Icons.info_outline),
-        ],
+            SizedBox(height: 15),
+            _DrawerItem(
+              title: 'HOME',
+              category: '',
+              icon: FontAwesomeIcons.house,
+            ),
+            _DrawerItem(
+              title: 'WISHLIST',
+              category: 'wishlist',
+              icon: Icons.favorite,
+            ),
+            _DrawerItem(
+              title: 'MY ORDER',
+              category: 'orders',
+              icon: Icons.fire_truck_rounded,
+            ),
+            const Spacer(),
+            const Divider(color: Colors.black12, thickness: 1),
+            const SizedBox(height: 8),
+            _DrawerItem(title: 'ABOUT US', icon: Icons.info_outline),
+          ],
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:food_website/models/product.dart';
 import 'package:food_website/widgets/app_navigation.dart';
 import 'package:food_website/widgets/filter_bottom_sheet.dart';
 import 'package:food_website/widgets/product_card.dart';
+import 'package:food_website/widgets/page_appbar.dart';
 
 class ShopScreen extends StatefulWidget {
   final String? initialCategory;
@@ -87,71 +88,47 @@ void didUpdateWidget(covariant ShopScreen oldWidget) {
 
   @override
   Widget build(BuildContext context) {
-    // final search = _searchText;
     Query query = FirebaseFirestore.instance
         .collection('products')
         .where('isAvailable', isEqualTo: true);
 
-    // if (_selectedCategory != "All") {
-    //   query = query.where('category', isEqualTo: _selectedCategory);
-    // }
-
     return Scaffold(
+  appBar: buildPageAppBar(
+    context: context,
+    title: "Shop",
+    onBack: () => AppNavigation.tabIndex.value = 0, // ✅ tab back
+    actions: [
+      IconButton(
+        onPressed: () async {
+          final result = await showModalBottomSheet<FilterResult>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => FilterBottomSheet(
+              initialCategory: _selectedCategory,
+              initialPrice: _selectedPrice,
+              initialSort: _selectedSort,
+              initialRating: _selectedRating,
+            ),
+          );
+
+          if (result == null) return;
+
+          setState(() {
+            _selectedCategory = result.category;
+            _selectedPrice = result.price;
+            _selectedSort = result.sort;
+            _selectedRating = result.rating;
+          });
+        },
+        icon: const Icon(Icons.tune),
+      ),
+    ],
+  ),
       body: SafeArea(
         child: Column(
           children: [
-            // ✅ Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () => AppNavigation.tabIndex.value = 0,
-                    borderRadius: BorderRadius.circular(999),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(Icons.arrow_back_ios_new, size: 18),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      "Shop",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      final result = await showModalBottomSheet<FilterResult>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => FilterBottomSheet(
-                          initialCategory: _selectedCategory,
-                          initialPrice: _selectedPrice,
-                          initialSort: _selectedSort,
-                          initialRating: _selectedRating,
-                        ),
-                      );
-
-                      if (result == null) return;
-
-                      setState(() {
-                        _selectedCategory = result.category;
-                        _selectedPrice = result.price;
-                        _selectedSort = result.sort;
-                        _selectedRating = result.rating;
-                      });
-                    },
-                    icon: const Icon(Icons.tune),
-                  ),
-                ],
-              ),
-            ),
+            
 
             // ✅ Search bar (CLICKABLE)
             Padding(

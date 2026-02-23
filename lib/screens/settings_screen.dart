@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_website/screens/change_password_screen.dart';
 import 'package:food_website/theme/app_colors.dart';
+import 'package:food_website/widgets/page_appbar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,11 +19,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Settings"),
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: buildPageAppBar(
+        context: context,
+        title: "Setting",
+        onBack: () => Navigator.pop(context),
       ),
       body: SafeArea(
         child: ListView(
@@ -31,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
- color: AppColors.card,
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: Colors.black12),
               ),
@@ -274,6 +274,6 @@ class _RowDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(padding: EdgeInsets.only(left: 64, right: 14),);
+    return const Padding(padding: EdgeInsets.only(left: 64, right: 14));
   }
 }

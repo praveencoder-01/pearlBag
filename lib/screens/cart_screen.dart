@@ -7,7 +7,8 @@ import '../providers/cart_provider.dart';
 
 class CartScreen extends StatelessWidget {
   final double bottomInset;
-  const CartScreen({super.key, this.bottomInset = 0});
+  final bool showAppBar;
+  const CartScreen({super.key, this.bottomInset = 0, this.showAppBar= false});
 
   // ✅ reusable row (ONLY ONCE)
   Widget _billRow(
@@ -122,7 +123,13 @@ class CartScreen extends StatelessWidget {
     final cart = context.watch<CartProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Cart')),
+      appBar: showAppBar
+    ? buildPageAppBar(
+        context: context,
+        title: "Cart",
+        onBack: () => Navigator.pop(context),
+      )
+    : null,
 
       // ✅ BODY
       body: cart.items.isEmpty
@@ -406,4 +413,29 @@ class CartScreen extends StatelessWidget {
             ),
     );
   }
+}
+
+
+PreferredSizeWidget buildPageAppBar({
+  required BuildContext context,
+  required String title,
+  required VoidCallback onBack,
+}) {
+  return AppBar(
+    elevation: 0,
+    centerTitle: true,
+    backgroundColor: AppColors.surface,
+    foregroundColor: AppColors.textPrimary,
+    title: Text(
+      title,
+      style: const TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 18,
+      ),
+    ),
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+      onPressed: onBack,
+    ),
+  );
 }

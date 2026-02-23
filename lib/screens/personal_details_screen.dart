@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/theme/app_colors.dart';
+import 'package:food_website/widgets/page_appbar.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PersonalDetailsScreen extends StatefulWidget {
@@ -174,12 +175,11 @@ class _PersonalDetailsScreenState extends State<PersonalDetailsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Personal Details"),
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
+      appBar: buildPageAppBar(
+  context: context,
+  title: "Personal Details",
+  onBack: () => Navigator.pop(context),
+),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),

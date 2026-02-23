@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/screens/product_detail_screen.dart';
 import 'package:food_website/theme/app_colors.dart';
+import 'package:food_website/widgets/page_appbar.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -43,7 +44,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         .orderBy("createdAt", descending: true);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("My Orders")),
+      appBar: buildPageAppBar(
+  context: context,
+  title: "My orders",
+  onBack: () => Navigator.pop(context),
+),
       body: Column(
         children: [
           Padding(

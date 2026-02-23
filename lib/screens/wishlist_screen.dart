@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
 import 'package:food_website/providers/cart_provider.dart';
-import 'package:food_website/screens/cart_screen.dart';
 import 'package:food_website/theme/app_colors.dart';
+import 'package:food_website/widgets/page_appbar.dart';
 import 'package:food_website/widgets/wishlist_service.dart';
 import 'package:provider/provider.dart';
 
@@ -64,108 +64,91 @@ class _WishlistScreenState extends State<WishlistScreen> {
     }
 
     return Scaffold(
+      appBar: buildPageAppBar(
+        context: context,
+        onBack: () => Navigator.pop(context),
+
+        // ✅ Search in title place
+        titleWidget: Container(
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF2F2F2),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.search, color: Colors.black38, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: _searchCtrl,
+                  onChanged: (_) => setState(() {}),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Search...",
+                    isDense: true,
+                  ),
+                ),
+              ),
+              if (_searchCtrl.text.isNotEmpty)
+                InkWell(
+                  onTap: () {
+                    _searchCtrl.clear();
+                    setState(() {});
+                  },
+                  child: const Icon(
+                    Icons.close,
+                    size: 18,
+                    color: Colors.black38,
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // ✅ Cart icon on right
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Consumer<CartProvider>(
+              builder: (_, cart, __) {
+                return Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.shopping_bag_outlined),
+                      onPressed: () => Navigator.pushNamed(context, '/cart'),
+                    ),
+                    if (cart.totalItemsQty > 0)
+                      Positioned(
+                        right: 6,
+                        bottom: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.black,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            cart.items.length.toString(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
-              child: Row(
-                children: [
-                  _circleIcon(
-                    icon: Icons.arrow_back,
-                    onTap: () => Navigator.pop(context),
-                  ),
-
-                  // Search row + cart button
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
- color: AppColors.card,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.black12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.search, color: Colors.black38),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: TextField(
-                                controller: _searchCtrl,
-                                onChanged: (_) => setState(() {}),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: "Search...",
-                                ),
-                              ),
-                            ),
-                            if (_searchCtrl.text.isNotEmpty)
-                              InkWell(
-                                onTap: () {
-                                  _searchCtrl.clear();
-                                  setState(() {});
-                                },
-                                child: const Icon(
-                                  Icons.close,
-                                  size: 18,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // const SizedBox(width: 12),
-                  // const Spacer(),
-                  Consumer<CartProvider>(
-                    builder: (_, cart, __) {
-                      return Stack(
-                        children: [
-                          _circleIcon(
-                            icon: Icons.shopping_bag_outlined,
-                            filled: true,
-                            onTap: () {
-                              Navigator.of(context, rootNavigator: true).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const CartScreen(),
-                                ),
-                              );
-                            },
-                          ),
-
-                          if (cart.totalItemsQty > 0)
-                            Positioned(
-                              right: 6,
-                              bottom: 6,
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: const BoxDecoration(
-                                  color: Colors.black,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  cart.items.length.toString(),
-                                  style:  TextStyle(
-                                    fontSize: 10,
-                                    color:Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
             const Padding(
               padding: EdgeInsets.fromLTRB(18, 8, 18, 10),
               child: Align(
@@ -213,34 +196,37 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         return const Center(child: Text("No items found"));
                       }
 
-                      return ListView.separated(
+                      return ListView.builder(
                         padding: const EdgeInsets.fromLTRB(18, 6, 18, 20),
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 14),
-                        itemBuilder: (_, i) => _WishCardFirebase(
-                          product: filtered[i],
-                          onRemove: () async {
-                            await WishlistService.remove(filtered[i].id);
-                          },
-                          onAddToCart: () async {
-                            final p = filtered[i];
-                            final cart = context.read<CartProvider>();
+                        // separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        itemBuilder: (_, i) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: _WishCardFirebase(
+                            product: filtered[i],
+                            onRemove: () async {
+                              await WishlistService.remove(filtered[i].id);
+                            },
+                            onAddToCart: () async {
+                              final p = filtered[i];
+                              final cart = context.read<CartProvider>();
 
-                            // ✅ Add 1 qty to cart
-                            await cart.addToCart(p.copyWith(quantity: 1));
+                              // ✅ Add 1 qty to cart
+                              await cart.addToCart(p.copyWith(quantity: 1));
 
-                            if (!context.mounted) return;
+                              if (!context.mounted) return;
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("${p.name} added to cart"),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("${p.name} added to cart"),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
 
-                            // ✅ Optional: remove from wishlist after adding
-                            await WishlistService.remove(p.id);
-                          },
+                              // ✅ Optional: remove from wishlist after adding
+                              await WishlistService.remove(p.id);
+                            },
+                          ),
                         ),
                       );
                     },
@@ -250,27 +236,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _circleIcon({
-    required IconData icon,
-    required VoidCallback onTap,
-    bool filled = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        height: 44,
-        width: 44,
-        decoration: BoxDecoration(
-          // color: Colors.white,
-          shape: BoxShape.circle,
-          border: filled ? null : Border.all(color: Colors.black12),
-        ),
-        child: Icon(icon, color: Colors.black, size: 22),
       ),
     );
   }
@@ -292,7 +257,8 @@ class _WishCardFirebase extends StatelessWidget {
     final img = product.imageUrl;
 
     return Container(
-      height: 100,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 10), // ✅ gives height
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(18),
@@ -329,9 +295,10 @@ class _WishCardFirebase extends StatelessWidget {
 
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // ✅ very important
                 children: [
                   Text(
                     product.name,
@@ -353,7 +320,7 @@ class _WishCardFirebase extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 10), // ✅ instead of Spacer()
                   Text(
                     "\$${product.price.toStringAsFixed(2)}",
                     style: const TextStyle(
@@ -368,32 +335,24 @@ class _WishCardFirebase extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 34,
-                  child: ElevatedButton(
-                    onPressed: onAddToCart,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                    ),
-                    child: const Text(
-                      "Add to cart",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                      ),
-                    ),
+            child: SizedBox(
+              height: 38,
+              child: ElevatedButton(
+                onPressed: onAddToCart,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
                   ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                 ),
-              ],
+                child: const Text(
+                  "Add to cart",
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                ),
+              ),
             ),
           ),
         ],

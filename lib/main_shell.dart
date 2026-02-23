@@ -11,6 +11,7 @@ import 'package:food_website/theme/app_colors.dart';
 import 'package:food_website/widgets/app_navigation.dart';
 import 'package:food_website/widgets/site_drawer_left.dart';
 import 'package:food_website/widgets/site_header.dart';
+
 // If you don't have these yet, keep the placeholder screens below
 // and later replace with your real screens.
 class MainShell extends StatefulWidget {
@@ -30,6 +31,9 @@ class _MainShellState extends State<MainShell> {
   bool _loadingSuggest = false;
   Timer? _suggestDebounce;
   final List<String> _searchHistory = [];
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _fetchSuggestions(String text) async {
     final q = text.trim().toLowerCase();
@@ -42,7 +46,6 @@ class _MainShellState extends State<MainShell> {
 
     try {
       // ✅ SIMPLE method: fetch a small batch and filter locally
-      // (Firestore "contains" query directly support nahi karta)
       final snap = await FirebaseFirestore.instance
           .collection('products')
           .where('isAvailable', isEqualTo: true)
@@ -99,20 +102,7 @@ class _MainShellState extends State<MainShell> {
     };
 
     AppNavigation.tabIndex.addListener(_tabListener);
-  //    WidgetsBinding.instance.addPostFrameCallback((_) async {
-  //   final user = FirebaseAuth.instance.currentUser;
-
-  //   if (user != null) {
-  //     await context.read<CartProvider>().loadCartFromFirestore();
-  //     await context.read<WishlistProvider>().loadWishlist();
-  //   }
-  // });
   }
-
-  bool _isSearching = false;
-  final TextEditingController _searchController = TextEditingController();
-  // String searchQuery = "";
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -130,11 +120,11 @@ class _MainShellState extends State<MainShell> {
         return HomeScreen();
       case 1:
         return ShopScreen(
-          key: ValueKey(_shopSearchQuery), // ✅ add this
+          key: ValueKey(_shopSearchQuery),
           searchQuery: _shopSearchQuery,
         );
       case 2:
-        return CartScreen();
+        return const CartScreen();
       case 3:
         return ProfileScreen();
       default:
@@ -212,26 +202,16 @@ class _MainShellState extends State<MainShell> {
     }
 
     // CART
-    if (_selectedIndex == 2) {
-      return AppBar(
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
-            size: 18,
-          ),
-          onPressed: () {
-            setState(() => _selectedIndex = 0);
-            AppNavigation.tabIndex.value = 0;
-          },
-        ),
-        title: const Text("Cart", style: TextStyle(color: Colors.black)),
-      );
-    }
+   if (_selectedIndex == 2) {
+  return buildPageAppBar(
+    context: context,
+    title: "Cart",
+    onBack: () {
+      setState(() => _selectedIndex = 0);
+      AppNavigation.tabIndex.value = 0;
+    },
+  );
+}
 
     // PROFILE
     if (_selectedIndex == 3) {
@@ -263,6 +243,11 @@ class _MainShellState extends State<MainShell> {
   }
 
   Widget _buildHistoryList() {
+    // ✅ If no history, show nothing
+    if (_searchHistory.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -292,7 +277,6 @@ class _MainShellState extends State<MainShell> {
               leading: const Icon(Icons.history, size: 20),
               title: Text(q, maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () {
-                // history item pe click -> search run
                 _searchController.text = q;
                 _searchController.selection = TextSelection.collapsed(
                   offset: q.length,
@@ -372,7 +356,6 @@ class _MainShellState extends State<MainShell> {
                   child: Container(
                     constraints: const BoxConstraints(maxHeight: 280),
                     decoration: BoxDecoration(
-
                       borderRadius: BorderRadius.circular(16),
                     ),
 
@@ -477,4 +460,6 @@ class _MainShellState extends State<MainShell> {
       ),
     );
   }
+
 }
+
