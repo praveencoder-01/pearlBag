@@ -32,28 +32,24 @@ class AuthWrapper extends StatelessWidget {
       .doc(user.uid)
       .get(),
   builder: (context, adminSnap) {
-
-    // Step B: safe load after first frame
-    
-
     if (adminSnap.connectionState == ConnectionState.waiting) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // check if mounted to avoid errors
-      if (context.mounted) {
-        // context.read<CartProvider>().loadCartFromFirestore();
-      }
-    });
-
-    if (adminSnap.data != null && adminSnap.data!.exists) {
-      return const AdminDashboard();
-    } else {
-      return const  MainShell();
+    // ✅ IMPORTANT: show error (permission / not found)
+    if (adminSnap.hasError) {
+      return Scaffold(
+        body: Center(
+          child: Text("Admin check failed: ${adminSnap.error}"),
+        ),
+      );
     }
+
+    final isAdmin = adminSnap.data?.exists == true;
+
+    return isAdmin ? const AdminDashboard() : const MainShell();
   },
 );
       },

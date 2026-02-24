@@ -6,6 +6,7 @@ import 'package:food_website/providers/cart_provider.dart';
 import 'package:food_website/providers/drawer_provider.dart';
 import 'package:food_website/providers/user_provider.dart';
 import 'package:food_website/providers/wishlist_provider.dart';
+import 'package:food_website/screens/about_us_screen.dart';
 import 'package:food_website/screens/cart_screen.dart';
 import 'package:food_website/screens/checkout_screen.dart';
 import 'package:food_website/screens/faq_screen.dart';
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
     '/checkout': (context) => const CheckoutScreen(),
     '/faqs': (_) => const FaqsScreen(),
     '/privacy': (_) => const PrivacyPolicyScreen(),
+    '/about': (_) => const AboutUsScreen(),
   },
 
   onGenerateRoute: (settings) {
