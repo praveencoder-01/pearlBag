@@ -24,53 +24,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     required String currentStatus,
     required String orderId,
   }) {
-    Color getColor(String status) {
-      switch (status) {
-        case 'Delivered':
-          return Colors.green;
-        case 'Cancelled':
-          return Colors.red;
-        case 'Processing':
-          return Colors.blue;
-        case 'Shipped':
-          return Colors.purple;
-        default:
-          return Colors.orange;
-      }
-    }
+    Color bg = Colors.black.withOpacity(0.06);
+Color br = Colors.black.withOpacity(0.10);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: getColor(currentStatus).withOpacity(0.35),
-        borderRadius: BorderRadius.circular(20),
+return Container(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  decoration: BoxDecoration(
+    color: bg,
+    borderRadius: BorderRadius.circular(999),
+    border: Border.all(color: br),
+  ),
+  child: Theme(
+    data: Theme.of(context).copyWith(
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: orderStatuses.contains(currentStatus) ? currentStatus : 'Pending',
+        isDense: true,
+        dropdownColor: Colors.white,
+        style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.black),
+        items: orderStatuses.map((status) {
+          return DropdownMenuItem<String>(
+            value: status,
+            child: Text(status, overflow: TextOverflow.ellipsis),
+          );
+        }).toList(),
+        onChanged: (newStatus) async {
+          if (newStatus == null) return;
+          await FirebaseFirestore.instance
+              .collection('orders')
+              .doc(orderId)
+              .update({'orderStatus': newStatus});
+        },
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          highlightColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: orderStatuses.contains(currentStatus) ? currentStatus : null,
-            items: orderStatuses.map((status) {
-              return DropdownMenuItem<String>(
-                value: status,
-                child: Text(status),
-              );
-            }).toList(),
-            onChanged: (newStatus) async {
-              if (newStatus == null) return;
-              await FirebaseFirestore.instance
-                  .collection('orders')
-                  .doc(orderId)
-                  .update({'orderStatus': newStatus});
-            },
-          ),
-        ),
-      ),
-    );
+    ),
+  ),
+);
   }
 
   @override
@@ -105,18 +97,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 _title("Order Info"),
                 _row("Order No", data['orderNumber'] ?? 'N/A'),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Status",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: const Text(
+                        "Status",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    statusBadgeDropdown(
-                      context: context,
-                      currentStatus: orderStatuses.contains(data['orderStatus'])
-                          ? data['orderStatus']
-                          : 'Pending',
-                      orderId: widget.orderId,
+                    Flexible(
+                      child: statusBadgeDropdown(
+                        context: context,
+                        currentStatus: orderStatuses.contains(data['orderStatus'])
+                            ? data['orderStatus']
+                            : 'Pending',
+                        orderId: widget.orderId,
+                      ),
                     ),
                   ],
                 ),
@@ -181,15 +176,30 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   );
 
   Widget _row(String key, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(key),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
-    ),
-  );
+  padding: const EdgeInsets.symmetric(vertical: 6),
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(
+        width: 120,
+        child: Text(
+          key,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+    ],
+  ),
+);
 
   Widget _addressBlock(Map address) {
     if (address.isEmpty) {

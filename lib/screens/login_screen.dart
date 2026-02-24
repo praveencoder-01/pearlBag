@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:food_website/admin/admin_dashboard.dart';
+import 'package:food_website/admin/admin_shell.dart';
+// import 'package:food_website/admin/admin_dashboard.dart';
 import 'package:food_website/auth/auth_service.dart';
 import 'package:food_website/screens/home_screen.dart';
 import 'package:food_website/screens/signup_screen.dart';
@@ -273,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (adminDoc.exists) {
         Navigator.of(
           context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => AdminDashboard()));
+        ).pushReplacement(MaterialPageRoute(builder: (_) => PearlAdminShell()));
       } else {
         Navigator.of(
           context,

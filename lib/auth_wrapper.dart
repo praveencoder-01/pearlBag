@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:food_website/admin/admin_dashboard.dart';
+// import 'package:food_website/admin/admin_dashboard.dart';
+import 'package:food_website/admin/admin_shell.dart';
 import 'package:food_website/main_shell.dart';
 import 'package:food_website/screens/login_screen.dart';
 
@@ -49,7 +50,7 @@ class AuthWrapper extends StatelessWidget {
 
     final isAdmin = adminSnap.data?.exists == true;
 
-    return isAdmin ? const AdminDashboard() : const MainShell();
+    return isAdmin ? const PearlAdminShell() : const MainShell();
   },
 );
       },
