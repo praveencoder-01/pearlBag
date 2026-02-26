@@ -50,7 +50,7 @@ class AuthWrapper extends StatelessWidget {
 
     final isAdmin = adminSnap.data?.exists == true;
 
-    return isAdmin ? const PearlAdminShell() : const MainShell();
+    return isAdmin ? const PearlAdminShell(current: "dashboard") : const MainShell();
   },
 );
       },

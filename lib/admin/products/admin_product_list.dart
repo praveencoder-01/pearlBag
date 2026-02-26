@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:food_website/admin/admin_drawer.dart';
 import 'package:food_website/admin/products/add_product_screen.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -32,22 +33,17 @@ class AdminProductListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text(
-          "Product Management",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C63FF), Color(0xFF3F3D56)],
-            ),
-          ),
-        ),
+drawer:  AdminDrawer(current: "products"),
+  appBar: AppBar(
+    elevation: 0,
+    title: const Text("Product Management", style: TextStyle(fontWeight: FontWeight.bold)),
+    centerTitle: true,
+    flexibleSpace: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(colors: [Color(0xFF6C63FF), Color(0xFF3F3D56)]),
       ),
+    ),
+  ),
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
