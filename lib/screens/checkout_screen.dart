@@ -125,7 +125,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _placingOrder = true);
 
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final user = FirebaseAuth.instance.currentUser;
+      final uid = user?.uid;
       if (uid == null) {
         ScaffoldMessenger.of(
           context,
@@ -137,9 +138,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final items = cart.items.map((p) {
         final lineTotal = p.price * p.quantity;
         return {
-          "productId": p.id, // agar p.id nahi hai to remove this line
+          "productId": p.id,
           "name": p.name,
-          "imageUrl": p.cartImage, // asset OR network supported
+          "imageUrl": p.cartImage,
           "quantity": p.quantity,
           "unitPrice": p.price,
           "lineTotal": lineTotal,
@@ -157,6 +158,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final orderData = {
         "userId": uid,
+        "userEmail": (user?.email ?? "").trim(), // ✅ Gmail stored
+        "userName": (user?.displayName ?? "").trim(), // optional
         "createdAt": FieldValue.serverTimestamp(),
         "orderStatus": "Placed",
         "paymentStatus": "Pending",
@@ -168,7 +171,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       };
 
       // ✅ Save order
-      await FirebaseFirestore.instance.collection("orders").add(orderData);
+      final orderRef = await FirebaseFirestore.instance
+          .collection("orders")
+          .add(orderData);
+
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (final it in items) {
+        final itemRef = orderRef.collection("items").doc();
+        batch.set(itemRef, it);
+      }
+
+      await batch.commit();
 
       if (!mounted) return;
 
@@ -201,10 +215,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       appBar: buildPageAppBar(
-  context: context,
-  title: "Checkout",
-  onBack: () => Navigator.pop(context),
-),
+        context: context,
+        title: "Checkout",
+        onBack: () => Navigator.pop(context),
+      ),
 
       body: cart.items.isEmpty
           ? const Center(child: Text("Cart is empty"))

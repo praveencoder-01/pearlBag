@@ -6,11 +6,15 @@ import 'package:food_website/admin/admin_shell.dart';
 import 'package:food_website/main_shell.dart';
 import 'package:food_website/screens/login_screen.dart';
 
+
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final u = FirebaseAuth.instance.currentUser;
+debugPrint("LOGIN EMAIL: ${u?.email}");
+debugPrint("LOGIN UID: ${u?.uid}");
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
@@ -27,9 +31,9 @@ class AuthWrapper extends StatelessWidget {
 
         final user = snapshot.data!;
 
-       return FutureBuilder<DocumentSnapshot>(
+      return FutureBuilder<DocumentSnapshot>(
   future: FirebaseFirestore.instance
-      .collection('admin')
+      .collection('users')
       .doc(user.uid)
       .get(),
   builder: (context, adminSnap) {
@@ -39,18 +43,20 @@ class AuthWrapper extends StatelessWidget {
       );
     }
 
-    // ✅ IMPORTANT: show error (permission / not found)
     if (adminSnap.hasError) {
       return Scaffold(
         body: Center(
-          child: Text("Admin check failed: ${adminSnap.error}"),
+          child: Text("Role check failed: ${adminSnap.error}"),
         ),
       );
     }
 
-    final isAdmin = adminSnap.data?.exists == true;
+    final data = adminSnap.data?.data() as Map<String, dynamic>?;
+    final isAdmin = data?['isAdmin'] == true;
 
-    return isAdmin ? const PearlAdminShell(current: "dashboard") : const MainShell();
+    return isAdmin
+        ? const PearlAdminShell(current: "dashboard")
+        : const MainShell();
   },
 );
       },

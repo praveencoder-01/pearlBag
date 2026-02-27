@@ -10,6 +10,7 @@ class PageHost extends StatelessWidget {
   final VoidCallback? onOpenDrawer;
   final Widget child;
   final bool isDesktop;
+  final bool showSearch;
   final ValueChanged<String> onQuickAction;
 
   const PageHost({
@@ -19,6 +20,7 @@ class PageHost extends StatelessWidget {
     required this.isDesktop,
     required this.onQuickAction,
     this.onOpenDrawer,
+    required this.showSearch,
   });
 
   @override
@@ -28,20 +30,18 @@ class PageHost extends StatelessWidget {
       child: Column(
         children: [
           // Top header bar (premium, aligned, responsive)
+          // Top header bar (premium, aligned, responsive)
           Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFFFFF), Color(0xFFF6F8FF)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+            decoration: BoxDecoration(
+              color: AdminTheme.bg, // ✅ yahan shift
+              border: const Border(
+                bottom: BorderSide(color: AdminTheme.border),
               ),
-              border: Border(bottom: BorderSide(color: AdminTheme.border)),
             ),
             child: Padding(
-              // ✅ REQUIRED padding
               padding: const EdgeInsets.symmetric(
                 horizontal: Space.x16,
-                vertical: 10, // ✅ REQUIRED vertical 10
+                vertical: 10,
               ),
               child: LayoutBuilder(
                 builder: (context, c) {
@@ -56,9 +56,9 @@ class PageHost extends StatelessWidget {
                     isTablet: isTablet,
                     isDesktop: isDesktop,
                     title: title,
-                    // ✅ Menu only when drawer exists; shown on mobile requirement
                     onOpenDrawer: onOpenDrawer,
                     onQuickAction: onQuickAction,
+                    showSearch: showSearch,
                   );
                 },
               ),

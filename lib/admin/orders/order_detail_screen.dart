@@ -4,6 +4,7 @@
 // =======================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,6 +20,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   // ✅ MUST KEEP SAME STATUSES
   final List<String> orderStatuses = [
+    'Placed',
     'Pending',
     'Processing',
     'Shipped',
@@ -69,7 +71,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
-            value: orderStatuses.contains(currentStatus) ? currentStatus : 'Pending',
+            value: orderStatuses.contains(currentStatus)
+                ? currentStatus
+                : 'Pending',
             isExpanded: true,
             isDense: true,
             dropdownColor: Colors.white,
@@ -114,7 +118,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         actions: [
           IconButton(
             tooltip: "Copy Order ID",
-            onPressed: () => _copyToClipboard(context, widget.orderId, label: "Order ID"),
+            onPressed: () =>
+                _copyToClipboard(context, widget.orderId, label: "Order ID"),
             icon: const Icon(Icons.copy_rounded),
           ),
           const SizedBox(width: 6),
@@ -136,11 +141,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             return const _EmptyState(
               icon: Icons.receipt_long_outlined,
               title: "Order not found",
-              subtitle: "This order may have been deleted or the ID is invalid.",
+              subtitle:
+                  "This order may have been deleted or the ID is invalid.",
             );
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
+          debugPrint("ORDER userEmail => ${data['userEmail']}");
+          debugPrint("ORDER userId => ${data['userId']}");
+          debugPrint(
+            "AUTH email => ${FirebaseAuth.instance.currentUser?.email}",
+          );
           final address = (data['shippingAddress'] ?? {}) as Map;
 
           final createdAt = data['createdAt'] != null
@@ -200,7 +211,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         canCopy: true,
                       ),
                     ],
-                    onCopy: (v, label) => _copyToClipboard(context, v, label: label),
+                    onCopy: (v, label) =>
+                        _copyToClipboard(context, v, label: label),
                   ),
                 ),
 
@@ -230,9 +242,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   title: "Bill Summary",
                   child: Column(
                     children: [
-                      _BillRow(label: "Subtotal", value: "₹${subtotal.toStringAsFixed(0)}"),
+                      _BillRow(
+                        label: "Subtotal",
+                        value: "₹${subtotal.toStringAsFixed(0)}",
+                      ),
                       const SizedBox(height: s8),
-                      _BillRow(label: "Delivery", value: "₹${delivery.toStringAsFixed(0)}"),
+                      _BillRow(
+                        label: "Delivery",
+                        value: "₹${delivery.toStringAsFixed(0)}",
+                      ),
                       const SizedBox(height: s8),
                       _BillRow(
                         label: "Discount",
@@ -242,7 +260,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       const SizedBox(height: s12),
                       _SoftDivider(),
                       const SizedBox(height: s12),
-                      _BillRow(label: "Total", value: "₹${grandTotal.toStringAsFixed(0)}"),
+                      _BillRow(
+                        label: "Total",
+                        value: "₹${grandTotal.toStringAsFixed(0)}",
+                      ),
                       const SizedBox(height: s12),
                       _BillRow(
                         label: "Payment Method",
@@ -304,7 +325,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 imageUrl: (item['imageUrl'] ?? '').toString(),
                 name: (item['name'] ?? 'Item').toString(),
                 qty: _toInt(item['quantity']),
-                price: _toNum(item['price']),
+                price: _toNum(item['unitPrice']), // ✅ FIX
               ),
             );
           }).toList(),
@@ -328,7 +349,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return int.tryParse(v.toString()) ?? 1;
   }
 
-  void _copyToClipboard(BuildContext context, String value, {required String label}) {
+  void _copyToClipboard(
+    BuildContext context,
+    String value, {
+    required String label,
+  }) {
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -373,10 +398,7 @@ class _SummaryCard extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         border: Border.all(color: _border),
         gradient: LinearGradient(
-          colors: [
-            Colors.white,
-            _primary.withOpacity(0.06),
-          ],
+          colors: [Colors.white, _primary.withOpacity(0.06)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -413,7 +435,11 @@ class _SummaryCard extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.calendar_month_outlined, size: 16, color: _textSecondary),
+                        Icon(
+                          Icons.calendar_month_outlined,
+                          size: 16,
+                          color: _textSecondary,
+                        ),
                         SizedBox(width: 6),
                         // Date text below (actual date is added via widget)
                       ],
@@ -522,7 +548,9 @@ class SectionCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: const Color(0xFF4F46E5).withOpacity(0.10),
-                  border: Border.all(color: const Color(0xFF4F46E5).withOpacity(0.18)),
+                  border: Border.all(
+                    color: const Color(0xFF4F46E5).withOpacity(0.18),
+                  ),
                 ),
                 child: Icon(icon, color: const Color(0xFF4F46E5), size: 20),
               ),
@@ -537,10 +565,7 @@ class SectionCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const Text(
-                " ",
-                style: TextStyle(color: _textSecondary),
-              ),
+              const Text(" ", style: TextStyle(color: _textSecondary)),
             ],
           ),
           const SizedBox(height: 12),
@@ -712,17 +737,26 @@ class _AddressBlock extends StatelessWidget {
               children: [
                 Text(
                   line1.isEmpty ? "—" : line1,
-                  style: const TextStyle(color: _textPrimary, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: _textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   line2.trim() == "," ? "—" : line2,
-                  style: const TextStyle(color: _textSecondary, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: _textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   line3.trim() == "," ? "—" : line3,
-                  style: const TextStyle(color: _textSecondary, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: _textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -777,7 +811,10 @@ class ItemTile extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) =>
                           const Icon(Icons.broken_image, color: _textSecondary),
                     )
-                  : const Icon(Icons.image_not_supported, color: _textSecondary),
+                  : const Icon(
+                      Icons.image_not_supported,
+                      color: _textSecondary,
+                    ),
             ),
           ),
 
@@ -900,11 +937,7 @@ class _SoftDivider extends StatelessWidget {
       height: 1,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0x00E8ECF4),
-            Color(0xFFE8ECF4),
-            Color(0x00E8ECF4),
-          ],
+          colors: [Color(0x00E8ECF4), Color(0xFFE8ECF4), Color(0x00E8ECF4)],
         ),
       ),
     );

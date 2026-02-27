@@ -20,7 +20,7 @@ class SearchField extends StatelessWidget {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F9FF),
+        color: AdminTheme.bg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AdminTheme.border),
       ),
@@ -50,6 +50,7 @@ class SearchField extends StatelessWidget {
     );
   }
 }
+
 class _LivePill extends StatelessWidget {
   const _LivePill();
 
@@ -286,15 +287,19 @@ class _HeaderTitleBlock extends StatelessWidget {
 class _TabletHeader extends StatelessWidget {
   final String title;
   final ValueChanged<String> onQuickAction;
+  final bool showSearch;
 
-  const _TabletHeader({required this.title, required this.onQuickAction});
+  const _TabletHeader({
+    required this.title,
+    required this.onQuickAction,
+    required this.showSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // LEFT
         Expanded(
           child: _HeaderTitleBlock(
             title: title,
@@ -304,23 +309,20 @@ class _TabletHeader extends StatelessWidget {
             onOpenDrawer: null,
           ),
         ),
-
         const SizedBox(width: Space.x12),
 
-        // RIGHT
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 320, minWidth: 200),
-              child: const SearchField(hint: "Search…"),
-            ),
-            const SizedBox(width: Space.x10),
-
-            // ✅ Actions collapse into "More"
+            if (showSearch) ...[
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320, minWidth: 200),
+                child: const SearchField(hint: "Search…"),
+              ),
+              const SizedBox(width: Space.x10),
+            ],
             _HeaderMoreMenu(onQuickAction: onQuickAction),
             const SizedBox(width: Space.x8),
-
             IconButtonPill(
               tooltip: "Notifications",
               icon: Icons.notifications_none_rounded,
@@ -336,25 +338,27 @@ class _TabletHeader extends StatelessWidget {
   }
 }
 
-
 class _DesktopHeader extends StatelessWidget {
   final String title;
   final ValueChanged<String> onQuickAction;
+  final bool showSearch;
 
-  const _DesktopHeader({required this.title, required this.onQuickAction});
+  const _DesktopHeader({
+    required this.title,
+    required this.onQuickAction,
+    required this.showSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // LEFT (never jumps; ellipsis)
         Flexible(
           flex: 3,
           child: _HeaderTitleBlock(
             title: title,
             showLivePill: true,
-            // breadcrumb optional (kept off by default; hook ready)
             breadcrumb: null,
             showMenu: false,
             onOpenDrawer: null,
@@ -363,23 +367,22 @@ class _DesktopHeader extends StatelessWidget {
 
         const SizedBox(width: Space.x12),
 
-        // CENTER (fluid but max width)
-        Expanded(
-          flex: 4,
-          child: Align(
-            alignment: Alignment.center,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560, minWidth: 220),
-              child: const SearchField(
-                hint: "Search orders, products, customers…",
+        if (showSearch)
+          Expanded(
+            flex: 4,
+            child: Align(
+              alignment: Alignment.center,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560, minWidth: 220),
+                child: const SearchField(
+                  hint: "Search orders, products, customers…",
+                ),
               ),
             ),
           ),
-        ),
 
-        const SizedBox(width: Space.x12),
+        if (showSearch) const SizedBox(width: Space.x12),
 
-        // RIGHT (always right aligned; fixed height 44 items)
         Flexible(
           flex: 3,
           child: Align(
@@ -406,7 +409,6 @@ class _DesktopHeader extends StatelessWidget {
   }
 }
 
-
 class _HeaderTitleInline extends StatelessWidget {
   final String title;
   const _HeaderTitleInline({required this.title});
@@ -430,19 +432,22 @@ class _HeaderTitleInline extends StatelessWidget {
 class _MobileHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onOpenDrawer;
+  final bool showSearch;
 
-  const _MobileHeader({required this.title, required this.onOpenDrawer});
+  const _MobileHeader({
+    required this.title,
+    required this.onOpenDrawer,
+    required this.showSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Row 1
         SizedBox(
-          height: 56, // keeps the top row premium and stable
+          height: 56,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (onOpenDrawer != null) ...[
                 IconButtonPill(
@@ -452,10 +457,7 @@ class _MobileHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: Space.x10),
               ],
-
-              // Title (ellipsis, never jumps)
               Expanded(child: _HeaderTitleInline(title: title)),
-
               const SizedBox(width: Space.x10),
               IconButtonPill(
                 tooltip: "Notifications",
@@ -469,10 +471,10 @@ class _MobileHeader extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: Space.x10),
-
-        // Row 2 (full width search)
-        const SearchField(hint: "Search orders, products, customers…"),
+        if (showSearch) ...[
+          const SizedBox(height: Space.x10),
+          const SearchField(hint: "Search orders, products, customers…"),
+        ],
       ],
     );
   }
@@ -490,6 +492,7 @@ class ResponsiveHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onOpenDrawer;
   final ValueChanged<String> onQuickAction;
+  final bool showSearch;
 
   const ResponsiveHeader({
     super.key,
@@ -500,26 +503,33 @@ class ResponsiveHeader extends StatelessWidget {
     required this.title,
     required this.onOpenDrawer,
     required this.onQuickAction,
+    required this.showSearch,
   });
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Required: professional header height baseline
-    // Desktop/Tablet: exactly 56
-    // Mobile: min 56, grows because it becomes 2 rows (as required)
     final base = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 56),
       child: isMobile
-          ? _MobileHeader(title: title, onOpenDrawer: onOpenDrawer)
+          ? _MobileHeader(
+              title: title,
+              onOpenDrawer: onOpenDrawer,
+              showSearch: showSearch,
+            )
           : (isTablet
-                ? _TabletHeader(title: title, onQuickAction: onQuickAction)
-                : _DesktopHeader(title: title, onQuickAction: onQuickAction)),
+                ? _TabletHeader(
+                    title: title,
+                    onQuickAction: onQuickAction,
+                    showSearch: showSearch,
+                  )
+                : _DesktopHeader(
+                    title: title,
+                    onQuickAction: onQuickAction,
+                    showSearch: showSearch,
+                  )),
     );
 
-    // On desktop/tablet keep the container visually 56px tall
-    if (!isMobile) {
-      return SizedBox(height: 56, child: base);
-    }
+    if (!isMobile) return SizedBox(height: 56, child: base);
     return base;
   }
 }

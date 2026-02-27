@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:food_website/services/user_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -21,6 +22,8 @@ class AuthService {
     email: email,
     password: password,
   );
+  final user = FirebaseAuth.instance.currentUser!;
+await ensureUserDoc(user);
 
   return cred.user;
 }

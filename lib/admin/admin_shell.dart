@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/admin/admin_drawer.dart';
+import 'package:food_website/admin/orders/admin_orders_screen.dart';
 import 'package:food_website/admin/pages/dashboard_page.dart';
-import 'package:food_website/admin/pages/products_page.dart';
+import 'package:food_website/admin/products/admin_product_list.dart';
 import 'package:food_website/admin/theme/_theme.dart';
 import 'package:food_website/admin/widgets/empty_state.dart';
 import 'package:food_website/admin/widgets/page_host.dart';
@@ -91,6 +92,7 @@ class _PearlAdminShellState extends State<PearlAdminShell> {
         final content = PageHost(
           title: _title(_page),
           isDesktop: isDesktop,
+          showSearch: _page != AdminPage.orders, 
           onOpenDrawer: isDesktop
               ? null
               : () => _scaffoldKey.currentState?.openDrawer(),
@@ -115,7 +117,29 @@ class _PearlAdminShellState extends State<PearlAdminShell> {
           ),
           child: Scaffold(
             key: _scaffoldKey,
-            drawer: isDesktop ? null : AdminDrawer(current: widget.current),
+            drawer: isDesktop
+    ? null
+    : AdminDrawer(
+        current: _page.name,
+        onNavigate: (page) {
+          setState(() {
+            switch (page) {
+              case "dashboard":
+                _page = AdminPage.dashboard;
+                break;
+              case "orders":
+                _page = AdminPage.orders;
+                break;
+              case "products":
+                _page = AdminPage.products;
+                break;
+              case "settings":
+                _page = AdminPage.settings;
+                break;
+            }
+          });
+        },
+      ),
             body: SafeArea(
               child: Row(
                 children: [
@@ -144,11 +168,9 @@ class _PearlAdminShellState extends State<PearlAdminShell> {
       case AdminPage.dashboard:
         return PearlDashboardPage(key: key);
       case AdminPage.products:
-        return PearlProductsPage(key: key);
+        return AdminProductListScreen(key: key);
       case AdminPage.orders:
-        return const _ComingSoonPage(
-          title: "Orders (list + filters coming next)",
-        );
+  return AdminOrdersScreen(key: key);
       case AdminPage.reviews:
         return const _ComingSoonPage(title: "Reviews");
       case AdminPage.analytics:

@@ -9,126 +9,117 @@ class AdminSettingsScreen extends StatefulWidget {
 }
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
-  final user = FirebaseAuth.instance.currentUser;
+  User? get user => FirebaseAuth.instance.currentUser;
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    extendBodyBehindAppBar: true,
-    appBar: AppBar(
-      title: const Text("Admin Settings"),
-      centerTitle: true,
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-    ),
-    body: Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6C63FF),
-            Color(0xFF3F3D56),
-          ],
-        ),
+  @override
+  Widget build(BuildContext context) {
+    final u = user; // local copy
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text("Admin Settings"),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 420, // 🔹 CARD WIDTH CONTROL
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF6C63FF), Color(0xFF3F3D56)],
           ),
-          child: Card(
-            elevation: 14,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 🔹 PROFILE AVATAR
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.deepPurple,
-                        width: 2,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Card(
+              elevation: 14,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.deepPurple, width: 2),
                       ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 38,
-                      backgroundColor: Colors.deepPurple.shade100,
-                      child: Text(
-                        user?.displayName
-                                ?.substring(0, 1)
-                                .toUpperCase() ??
-                            "A",
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
+                      child: CircleAvatar(
+                        radius: 38,
+                        backgroundColor: Colors.deepPurple.shade100,
+                        child: Text(
+                          (u?.displayName?.isNotEmpty ?? false)
+                              ? u!.displayName![0].toUpperCase()
+                              : "A",
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  Text(
-                    user?.displayName ?? "Admin",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 14),
+                    Text(
+                      u?.displayName ?? "Admin",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    user?.email ?? "admin@example.com",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
+                    const SizedBox(height: 4),
+                    Text(
+                      u?.email ?? "admin@example.com",
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Divider(color: Colors.grey.shade300),
+                    const SizedBox(height: 6),
 
-                  const SizedBox(height: 20),
-                  Divider(color: Colors.grey.shade300),
-                  const SizedBox(height: 6),
+                    _settingsTile(
+                      icon: Icons.lock_outline,
+                      title: "Change Password",
+                      color: Colors.deepPurple,
+                      onTap: () {
+                        if (u == null || u.email == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("No logged-in user found"),
+                            ),
+                          );
+                          return;
+                        }
+                        _showChangePasswordDialog(u);
+                      },
+                    ),
 
-                  // 🔹 CHANGE PASSWORD
-                  _settingsTile(
-                    icon: Icons.lock_outline,
-                    title: "Change Password",
-                    color: Colors.deepPurple,
-                    onTap: _showChangePasswordDialog,
-                  ),
-
-                  // 🔹 LOGOUT
-                  _settingsTile(
-                    icon: Icons.logout,
-                    title: "Logout",
-                    color: Colors.red,
-                    onTap: () async {
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.of(context)
-                          .popUntil((route) => route.isFirst);
-                    },
-                  ),
-                ],
+                    _settingsTile(
+                      icon: Icons.logout,
+                      title: "Logout",
+                      color: Colors.red,
+                      onTap: () async {
+                        await FirebaseAuth.instance.signOut();
+                        if (!mounted) return;
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _settingsTile({
     required IconData icon,
@@ -167,31 +158,27 @@ Widget build(BuildContext context) {
     );
   }
 
-  // 🔹 CHANGE PASSWORD DIALOG
-  void _showChangePasswordDialog() {
+  // ✅ Change Password Dialog (safe)
+  void _showChangePasswordDialog(User u) {
     final currentPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
     bool isVerified = false;
+    bool isLoading = false;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
           contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
           actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          title: Row(
-            children: const [
+          title: const Row(
+            children: [
               Icon(Icons.lock_outline, color: Colors.deepPurple),
               SizedBox(width: 10),
-              Text(
-                "Change Password",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text("Change Password", style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -199,9 +186,7 @@ Widget build(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isVerified
-                    ? "Set a strong new password"
-                    : "Verify your current password",
+                isVerified ? "Set a strong new password" : "Verify your current password",
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
               ),
               const SizedBox(height: 16),
@@ -213,9 +198,7 @@ Widget build(BuildContext context) {
                   decoration: InputDecoration(
                     labelText: "Current Password",
                     prefixIcon: const Icon(Icons.lock),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
 
@@ -226,75 +209,80 @@ Widget build(BuildContext context) {
                   decoration: InputDecoration(
                     labelText: "New Password",
                     prefixIcon: const Icon(Icons.lock_reset),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: isLoading ? null : () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () async {
-                  if (!isVerified) {
-                    final currentPassword = currentPasswordController.text
-                        .trim();
-                    if (currentPassword.isEmpty) return;
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() => isLoading = true);
 
-                    try {
-                      final cred = EmailAuthProvider.credential(
-                        email: user!.email!,
-                        password: currentPassword,
-                      );
-                      await user!.reauthenticateWithCredential(cred);
+                        try {
+                          if (!isVerified) {
+                            final currentPassword = currentPasswordController.text.trim();
+                            if (currentPassword.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Enter current password")),
+                              );
+                              return;
+                            }
 
-                      setState(() {
-                        isVerified = true;
-                      });
+                            final cred = EmailAuthProvider.credential(
+                              email: u.email!,
+                              password: currentPassword,
+                            );
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Password verified")),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Current password is incorrect"),
-                        ),
-                      );
-                    }
-                  } else {
-                    final newPassword = newPasswordController.text.trim();
-                    if (newPassword.isEmpty) return;
+                            await u.reauthenticateWithCredential(cred);
 
-                    try {
-                      await user!.updatePassword(newPassword);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Password updated successfully"),
-                        ),
-                      );
-                      Navigator.pop(context);
-                    } catch (e) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-                    }
-                  }
-                },
+                            setState(() => isVerified = true);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Password verified")),
+                            );
+                          } else {
+                            final newPassword = newPasswordController.text.trim();
+                            if (newPassword.length < 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Password must be at least 6 characters")),
+                              );
+                              return;
+                            }
+
+                            await u.updatePassword(newPassword);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Password updated successfully")),
+                            );
+
+                            if (Navigator.canPop(context)) Navigator.pop(context);
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.message ?? e.code)),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Error: $e")),
+                          );
+                        } finally {
+                          setState(() => isLoading = false);
+                        }
+                      },
                 child: Text(
                   isVerified ? "Update Password" : "Verify Password",
                   style: const TextStyle(fontSize: 15, color: Colors.white),

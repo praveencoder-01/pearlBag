@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:food_website/admin/admin_setting_screen.dart';
-import 'package:food_website/admin/orders/admin_orders_screen.dart';
-import 'package:food_website/admin/products/admin_product_list.dart';
 
 class AdminDrawer extends StatelessWidget {
-  final String current; 
-  const AdminDrawer({super.key, required this.current});
+  final Function(String page) onNavigate;
+  final String current;
+  const AdminDrawer({
+    super.key,
+    required this.current,
+    required this.onNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,51 +43,38 @@ class AdminDrawer extends StatelessWidget {
             title: const Text("Dashboard"),
             onTap: () {
               Navigator.pop(context);
+              onNavigate("dashboard");
             },
           ),
 
           ListTile(
-  leading: const Icon(Icons.inventory),
-  title: const Text('Product Management'),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AdminProductListScreen(),
-      ),
-    );
-  },
-),
-
+            leading: const Icon(Icons.inventory),
+            title: const Text('Product Management'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate("products");
+            },
+          ),
 
           ListTile(
-  leading: const Icon(Icons.receipt_long),
-  title: const Text("Orders"),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AdminOrdersScreen(),
-      ),
-    );
-  },
-),
-
+            leading: const Icon(Icons.receipt_long),
+            title: const Text("Orders"),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate("orders");
+            },
+          ),
 
           const Spacer(),
 
           ListTile(
-  leading: const Icon(Icons.settings),
-  title: const Text("Admin Setting"),
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AdminSettingsScreen(),
-      ),
-    );
-  },
-),
+            leading: const Icon(Icons.settings),
+            title: const Text("Admin Setting"),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate("settings");
+            },
+          ),
         ],
       ),
     );

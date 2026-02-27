@@ -4,7 +4,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:food_website/admin/admin_drawer.dart';
+
 import 'order_detail_screen.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -15,7 +15,6 @@ class AdminOrdersScreen extends StatefulWidget {
 }
 
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
-
   String selectedStatus = 'All';
   String searchText = '';
 
@@ -34,16 +33,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
-      drawer: const AdminDrawer(current: "orders"),
-
-      body: SafeArea(
+    return Container(
+      color: const Color(0xffF6F7FB),
+       
+      child: SafeArea(
         child: Column(
           children: [
-
-            // ===== PAGE TITLE =====
-            _pageTitle(),
 
             // ===== SEARCH + FILTERS =====
             _topControls(),
@@ -57,8 +52,16 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     .snapshots(),
 
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        "Firestore Error:\n${snapshot.error}",
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
 
-                  if (!snapshot.hasData) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
@@ -73,7 +76,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                       return false;
                     }
 
-                    if (searchText.isNotEmpty && !orderNo.contains(searchText)) {
+                    if (searchText.isNotEmpty &&
+                        !orderNo.contains(searchText)) {
                       return false;
                     }
 
@@ -104,33 +108,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     );
   }
 
-  // ===================== PAGE TITLE =====================
-
-  Widget _pageTitle() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-      child: Row(
-        children: const [
-          Text(
-            "Orders",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(width: 10),
-          Text(
-            "Manage and track orders",
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ===================== SEARCH + FILTERS =====================
 
   Widget _topControls() {
@@ -138,7 +115,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: Column(
         children: [
-
           // SEARCH FIELD
           Container(
             height: 44,
@@ -209,7 +185,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-
         final doc = orders[index];
         final data = doc.data() as Map<String, dynamic>;
 
@@ -232,13 +207,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 blurRadius: 18,
                 offset: Offset(0, 6),
                 color: Color(0x14000000),
-              )
+              ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // ORDER + AMOUNT
               Row(
                 children: [
@@ -246,16 +220,19 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     child: Text(
                       "#${data['orderNumber']}",
                       style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 15),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                   Text(
                     "₹${data['totalAmount'] ?? 0}",
                     style: const TextStyle(
-                        color: Color(0xff4F46E5),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15),
-                  )
+                      color: Color(0xff4F46E5),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    ),
+                  ),
                 ],
               ),
 
@@ -317,7 +294,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           DataColumn(label: Text("Action")),
         ],
         rows: orders.map((doc) {
-
           final data = doc.data() as Map<String, dynamic>;
 
           final address = data['shippingAddress'] != null
@@ -325,7 +301,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               : 'N/A';
 
           final date = data['createdAt'] != null
-              ? (data['createdAt'] as Timestamp).toDate().toString().split(' ')[0]
+              ? (data['createdAt'] as Timestamp).toDate().toString().split(
+                  ' ',
+                )[0]
               : 'N/A';
 
           return DataRow(
@@ -335,8 +313,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               DataCell(
                 SizedBox(
                   width: 220,
-                  child: Text(address,
-                      overflow: TextOverflow.ellipsis, maxLines: 1),
+                  child: Text(
+                    address,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
               ),
               DataCell(Text(date)),
@@ -355,10 +336,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   Widget _paymentChip(String status) {
     final paid = status == "Paid";
-    return _chip(
-      paid ? "Paid" : "Unpaid",
-      paid ? Colors.green : Colors.red,
-    );
+    return _chip(paid ? "Paid" : "Unpaid", paid ? Colors.green : Colors.red);
   }
 
   Widget _statusChip(String status) {
@@ -399,9 +377,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => OrderDetailScreen(orderId: id),
-          ),
+          MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: id)),
         );
       },
       child: Container(
