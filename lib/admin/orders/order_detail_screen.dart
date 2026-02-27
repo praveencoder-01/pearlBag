@@ -147,11 +147,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
-          debugPrint("ORDER userEmail => ${data['userEmail']}");
-          debugPrint("ORDER userId => ${data['userId']}");
-          debugPrint(
-            "AUTH email => ${FirebaseAuth.instance.currentUser?.email}",
-          );
           final address = (data['shippingAddress'] ?? {}) as Map;
 
           final createdAt = data['createdAt'] != null

@@ -13,8 +13,6 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final u = FirebaseAuth.instance.currentUser;
-debugPrint("LOGIN EMAIL: ${u?.email}");
-debugPrint("LOGIN UID: ${u?.uid}");
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
