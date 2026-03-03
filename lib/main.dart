@@ -19,7 +19,6 @@ import 'firebase_options.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/category_provider.dart';
-// import 'screens/home_screen.dart';
 
 void main() async {
   Animate.restartOnHotReload = true;
@@ -44,7 +43,6 @@ class MyApp extends StatelessWidget {
     ChangeNotifierProvider(create: (_) => CategoryProvider()),
     ChangeNotifierProvider(create: (_) => DrawerProvider()),
     ChangeNotifierProvider(create: (_) => WishlistProvider()),
-    // ChangeNotifierProvider(create: (_) => ProductProvider()),
   ],
   child: MaterialApp(
   debugShowCheckedModeBanner: false,

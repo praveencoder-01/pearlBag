@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_website/models/product.dart';
@@ -40,130 +41,173 @@ class _ProductCardState extends State<ProductCard>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return VisibilityDetector(
-      key: ValueKey(widget.product.id),
-      onVisibilityChanged: (info) {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: InkWell(
-          hoverColor: Colors.transparent,
-
-          onTap: () {
-            Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(
-                builder: (_) => ProductDetailScreen(product: widget.product),
-              ),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+  Widget _buildMainCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // IMAGE + HEART
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(14),
                 ),
-              ],
-            ),
+
+                child: RepaintBoundary(
+                  child: _buildProductImage(widget.product.imageUrl),
+                ),
+              ),
+
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Consumer<WishlistProvider>(
+                  builder: (context, wishlist, _) {
+                    final isWishlisted = wishlist.isWishlisted(
+                      widget.product.id,
+                    );
+
+                    return InkWell(
+                      onTap: () {
+                        wishlist.toggle(widget.product.id);
+                      },
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        height: 34,
+                        width: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.92),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.12),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          size: 18,
+                          color: isWishlisted ? Colors.black : Colors.black87,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          // TEXT PART (NOW INSIDE CARD)
+          Padding(
+            padding: const EdgeInsets.all(13.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                // IMAGE + HEART
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(14),
-                      ),
-
-                      child: RepaintBoundary(
-                        child: _buildProductImage(widget.product.imageUrl),
-                      ),
-                    ),
-
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: Consumer<WishlistProvider>(
-                        builder: (context, wishlist, _) {
-                          final isWishlisted = wishlist.isWishlisted(
-                            widget.product.id,
-                          );
-
-                          return InkWell(
-                            onTap: () {
-                              wishlist.toggle(widget.product.id);
-                            },
-                            borderRadius: BorderRadius.circular(999),
-                            child: Container(
-                              height: 34,
-                              width: 34,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.92),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.12),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isWishlisted
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                size: 18,
-                                color: isWishlisted
-                                    ? Colors.black
-                                    : Colors.black87,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                Text(
+                  widget.product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
                 ),
 
-                // TEXT PART (NOW INSIDE CARD)
-                Padding(
-                  padding: const EdgeInsets.all(13.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.product.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 1.3,
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-                      Text(
-                        '₹${widget.product.price.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 6),
+                Text(
+                  '₹${widget.product.price.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('products')
+          .doc(widget.product.id)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const SizedBox();
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final stock = data['stock'] ?? 0;
+        final isOutOfStock = stock == 0;
+
+        return Stack(
+          children: [
+            VisibilityDetector(
+              key: ValueKey(widget.product.id),
+              onVisibilityChanged: (info) {},
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: InkWell(
+                  hoverColor: Colors.transparent,
+                  onTap: isOutOfStock
+                      ? null
+                      : () {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProductDetailScreen(product: widget.product),
+                            ),
+                          );
+                        },
+                  child: _buildMainCard(),
+                ),
+              ),
+            ),
+
+            if (isOutOfStock)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "OUT OF STOCK",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 

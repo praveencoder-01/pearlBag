@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// import '../widgets/site_header.dart';
-import '../widgets/site_footer.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -100,9 +98,6 @@ class AboutScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // ✅ KEEP SAME FOOTER
-                  const SiteFooter(),
                 ],
               ),
             ),

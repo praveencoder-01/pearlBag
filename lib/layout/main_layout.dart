@@ -17,14 +17,6 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Product> _filteredProducts = [];
   final TextEditingController _searchController = TextEditingController();
 
-  // void _onSearch(String value) {
-  // setState(() {
-  //   _filteredProducts = dummyProducts
-  //       .where((p) => p.name.toLowerCase().contains(value.toLowerCase()))
-  //       .toList();
-  // });
-  // }
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -44,13 +36,6 @@ class _MainLayoutState extends State<MainLayout> {
 
         Scaffold(
           backgroundColor: Colors.transparent,
-
-          // 🔹 HEADER
-          // appBar: SiteHeader(
-          //   onSearchChanged: (value) {
-          //     setState(() => _isSearching = value);
-          //   },
-          // ),
 
           // 🔹 PAGE CONTENT (opacity here)
           body: Opacity(opacity: _isSearching ? 0.4 : 1, child: widget.child),

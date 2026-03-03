@@ -320,13 +320,15 @@ class _MainShellState extends State<MainShell> {
         drawer: (isHome && !_isSearching) ? SiteDrawerLeft() : null,
         appBar: _buildAppBar(),
 
-        extendBody: true, // ⭐ VERY IMPORTANT
+        extendBody: false, // ⭐ VERY IMPORTANT
         backgroundColor: AppColors.scaffold,
 
         body: Stack(
           children: [
             /// 1️⃣ Normal screen (Home / Shop / Cart / Profile)
-            _currentScreen(),
+            Positioned.fill(
+  child: _currentScreen(),
+),
 
             /// 2️⃣ WHITE SEARCH OVERLAY (THIS HIDES HOME SCREEN)
             if (_isSearching)
@@ -347,9 +349,6 @@ class _MainShellState extends State<MainShell> {
             /// 3️⃣ SUGGESTION DROPDOWN (ALWAYS TOP LAYER)
             if (_isSearching)
               Positioned(
-                // top: , // just below search bar
-                // left: 12,
-                // right: 12,
                 child: Material(
                   elevation: 12,
                   borderRadius: BorderRadius.circular(16),
@@ -428,7 +427,6 @@ class _MainShellState extends State<MainShell> {
               borderRadius: BorderRadius.circular(40),
               child: NavigationBar(
                 height: 56,
-                // backgroundColor: const Color.fromARGB(255, 255, 0, 0),
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: _onItemTapped,
                 destinations: const <NavigationDestination>[

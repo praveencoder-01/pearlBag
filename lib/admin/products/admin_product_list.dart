@@ -32,23 +32,6 @@ class AdminProductListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: const Color(0xFFF6F7FB),
-
-      // // 👇 THIS IS YOUR BOTTOM RIGHT BUTTON
-      // floatingActionButton: FloatingActionButton.extended(
-      //   backgroundColor: const Color(0xFF6C63FF),
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(builder: (_) => const AddProductScreen()),
-      //     );
-      //   },
-      //   icon: const Icon(Icons.add, color: Colors.white),
-      //   label: const Text(
-      //     "Add Product",
-      //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-      //   ),
-      // ),
       body: Stack(
         children: [
           SafeArea(
