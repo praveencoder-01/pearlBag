@@ -41,23 +41,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _loadWishlistState() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setState(() {
-        _isWishlisted = false;
-        _loadingWish = false;
-      });
-      return;
-    }
+  final user = FirebaseAuth.instance.currentUser;
 
-    final exists = await WishlistService.isWishlisted(widget.product.id);
+  setState(() {
+    _loadingWish = true;
+  });
+
+  if (user == null) {
+    if (!mounted) return;
+    setState(() {
+      _isWishlisted = false;
+      _loadingWish = false;
+    });
+    return;
+  }
+
+  try {
+    final exists = await WishlistService
+        .isWishlisted(widget.product.id)
+        .timeout(const Duration(seconds: 8));
 
     if (!mounted) return;
     setState(() {
       _isWishlisted = exists;
+    });
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      _isWishlisted = false; // safe fallback
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Wishlist check failed: $e")),
+    );
+  } finally {
+    if (!mounted) return;
+    setState(() {
       _loadingWish = false;
     });
   }
+}
 
   @override
   void dispose() {
@@ -148,41 +170,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Future<void> _toggleWishlist() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login to use wishlist")),
-      );
-      return;
-    }
 
-    setState(() => _loadingWish = true);
-
-    try {
-      if (_isWishlisted) {
-        await WishlistService.remove(widget.product.id);
-        if (!mounted) return;
-        setState(() {
-          _isWishlisted = false;
-          _loadingWish = false;
-        });
-      } else {
-        await WishlistService.add(widget.product.id);
-        if (!mounted) return;
-        setState(() {
-          _isWishlisted = true;
-          _loadingWish = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _loadingWish = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Wishlist failed: $e")));
-    }
+Future<void> _toggleWishlist() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please login to use wishlist")),
+    );
+    return;
   }
+
+  if (_loadingWish) return; // prevent double taps
+
+  setState(() => _loadingWish = true);
+
+  try {
+    if (_isWishlisted) {
+      await WishlistService
+          .remove(widget.product.id)
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      setState(() => _isWishlisted = false);
+    } else {
+      await WishlistService
+          .add(widget.product.id)
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      setState(() => _isWishlisted = true);
+    }
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Wishlist failed: $e")),
+    );
+  } finally {
+    if (!mounted) return;
+    setState(() => _loadingWish = false);
+  }
+}
 
   Widget buildSpecsCard(Map<String, String> specs) {
     if (specs.isEmpty) return const SizedBox();

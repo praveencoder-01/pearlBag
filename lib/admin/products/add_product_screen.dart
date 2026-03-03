@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -92,17 +93,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() => isLoading = false);
   }
 
-  Future<void> pickImage(int index) async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+ Future<void> pickImage(int index) async {
+  final user = FirebaseAuth.instance.currentUser;
+debugPrint("STORAGE UPLOAD USER: ${user?.uid}  email: ${user?.email}");
+  final picker = ImagePicker();
+  final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  if (image == null) return;
 
-    setState(() {
-      pickedImages[index] = image;
-      isUploadingImage = true;
-      _uploadingIndex = index; // ✅ UI-only
-    });
+  setState(() {
+    pickedImages[index] = image;
+    isUploadingImage = true;
+    _uploadingIndex = index;
+  });
 
+  try {
     final fileName = DateTime.now().millisecondsSinceEpoch.toString();
     final ref = FirebaseStorage.instance.ref().child(
       'product_images/$fileName.png',
@@ -113,12 +117,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     final url = await ref.getDownloadURL();
 
+    if (!mounted) return;
     setState(() {
       uploadedImageUrls[index] = url;
-      isUploadingImage = false;
-      _uploadingIndex = null;
     });
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Image upload failed: $e")),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        isUploadingImage = false;
+        _uploadingIndex = null;
+      });
+    }
   }
+}
 
   // Example categories (UI only). You can replace with your real categories list.
   final List<String> _categories = const [

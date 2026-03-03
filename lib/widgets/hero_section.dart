@@ -228,17 +228,34 @@ class _HeroSectionState extends State<HeroSection> {
                 return Product.fromMap(doc.id, data);
               }).toList();
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: products.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.74,
-                ),
-                itemBuilder: (_, i) => ProductCard(product: products[i]),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  const crossAxisCount = 2;
+                  const spacing = 12.0;
+
+                  final itemWidth =
+                      (constraints.maxWidth -
+                          (spacing * (crossAxisCount - 1))) /
+                      crossAxisCount;
+
+                  // ✅ Make tile height enough for image + text area
+                  final imageHeight = itemWidth; // square image area
+                  const textAreaHeight = 90.0; // name + price + padding
+                  final itemHeight = imageHeight + textAreaHeight;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: products.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      mainAxisSpacing: spacing,
+                      crossAxisSpacing: spacing,
+                      mainAxisExtent: itemHeight, // ✅ FIX (no overflow)
+                    ),
+                    itemBuilder: (_, i) => ProductCard(product: products[i]),
+                  );
+                },
               );
             },
           ),

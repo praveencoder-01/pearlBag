@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_website/admin/admin_setting_screen.dart';
 
 class AdminDrawer extends StatelessWidget {
   final Function(String page) onNavigate;
@@ -71,8 +72,11 @@ class AdminDrawer extends StatelessWidget {
             leading: const Icon(Icons.settings),
             title: const Text("Admin Setting"),
             onTap: () {
-              Navigator.pop(context);
-              onNavigate("settings");
+              Navigator.pop(context); // close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
+              );
             },
           ),
         ],
